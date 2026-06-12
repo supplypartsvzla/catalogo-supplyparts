@@ -491,14 +491,16 @@
             });
         }
 
-        function filterProducts() {
+function filterProducts() {
             const query = document.getElementById('searchInput').value.toLowerCase();
             let filtered = productsArray;
 
+            // 1. Filtrar por categoría
             if (currentCategory !== 'TODO') {
                 filtered = filtered.filter(p => p.categoria && p.categoria.toUpperCase().trim() === currentCategory.toUpperCase().trim());
             }
 
+            // 2. Filtrar por barra de búsqueda
             if (query) {
                 filtered = filtered.filter(p => 
                     (p.descripcion && p.descripcion.toLowerCase().includes(query)) || 
@@ -507,6 +509,24 @@
                 );
             }
 
+            // 3. ORDENAR POR STOCK (De mayor a menor y luego alfabéticamente)
+            filtered.sort((a, b) => {
+                const stockA = Number(a.stock) || 0;
+                const stockB = Number(b.stock) || 0;
+                
+                // Si el stock es diferente, ordena del mayor al menor
+                if (stockB !== stockA) {
+                    return stockB - stockA; 
+                } 
+                // Si tienen el mismo stock (ej: ambos están agotados), los ordena por orden alfabético
+                else {
+                    const descA = (a.descripcion || '').toLowerCase();
+                    const descB = (b.descripcion || '').toLowerCase();
+                    return descA.localeCompare(descB);
+                }
+            });
+
+            // 4. Mostrar los productos ya filtrados y ordenados
             renderProducts(filtered);
         }
 
