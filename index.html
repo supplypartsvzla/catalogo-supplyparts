@@ -29,7 +29,7 @@
             color: var(--gris-oscuro);
         }
 
-        /* --- TOP HEADER (BARRA AZUL) --- */
+        /* --- TOP HEADER --- */
         .top-header {
             background-color: var(--azul-supply);
             padding: 12px 5%;
@@ -101,6 +101,12 @@
             font-weight: bold;
             font-size: 14px;
             text-decoration: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .cart-box:hover {
+            background-color: #041849;
         }
 
         /* --- MENÚ DE NAVEGACIÓN --- */
@@ -145,7 +151,7 @@
             background-color: var(--azul-supply);
         }
 
-        /* --- HERO BANNER (MÁXIMA SEGURIDAD) --- */
+        /* --- HERO BANNER --- */
         .hero-container {
             padding: 30px 5% 15px 5%;
         }
@@ -197,7 +203,7 @@
             color: #a0aec0;
         }
 
-        /* --- CUADRÍCULA DE PRODUCTOS / CATEGORÍAS --- */
+        /* --- CUADRÍCULA DE PRODUCTOS --- */
         .products-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
@@ -245,12 +251,13 @@
             font-size: 12px;
             gap: 8px;
             border: 1px dashed #e2e8f0;
+            overflow: hidden;
         }
 
         .image-placeholder img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .product-info {
@@ -369,8 +376,8 @@
         </div>
 
         <div class="header-right">
-            <a href="#" class="cart-box">
-                <i class="fa-solid fa-cart-shopping"></i> Bs. 0.00
+            <a onclick="initCatalog()" class="cart-box" title="Actualizar Inventario">
+                <i class="fa-solid fa-rotate"></i> Actualizar
             </a>
         </div>
     </header>
@@ -408,14 +415,14 @@
     </a>
 
     <script>
-        // PEGA AQUÍ EL ENLACE EXACTO GENERADO EN GOOGLE APPS SCRIPT
-        const GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/TU_NUEVA_API_AQUI/exec'; 
+        // PEGA AQUÍ LA URL "EJECUTABLE" QUE COPIASTE DEL PASO 3 DE APPS SCRIPT
+        const GOOGLE_SHEET_API_URL = 'AQUI_TU_URL_DE_APPS_SCRIPT'; 
 
         let productsArray = [];
         let currentCategory = 'TODO';
 
         function getIconForProduct(desc, cat) {
-            const d = desc.toLowerCase();
+            const d = (desc || '').toLowerCase();
             if (d.includes('cable') || d.includes('bobina')) return 'fa-wave-square';
             if (d.includes('camara') || d.includes('ezviz') || d.includes('balun')) return 'fa-video';
             if (d.includes('cerradura') || d.includes('electroiman')) return 'fa-lock';
@@ -439,6 +446,7 @@
                 const card = document.createElement('div');
                 card.className = 'product-card';
                 
+                // Formateo de Stock
                 const stockVal = Number(p.stock) || 0;
                 let stockBadge = '';
                 if (stockVal > 0) {
@@ -447,14 +455,19 @@
                     stockBadge = `<span class="stock-badge" style="background-color: #dc3545;">Agotado</span>`;
                 }
                 
-                const precio = Number(p.precio1) || 0;
+                // Formateo de Precio
+                // Reemplaza comas por puntos en caso de formato español para poder convertir a Number
+                const precioLimpio = String(p.precio1).replace(',', '.');
+                const precio = Number(precioLimpio) || 0;
                 const precioTexto = precio > 0 ? `Bs. ${precio.toFixed(2)}` : 'Consultar';
                 
                 const mensajeWhatsapp = encodeURIComponent(`Hola SupplyParts, deseo cotizar el producto: ${p.descripcion} (Código: ${p.codigo})`);
                 const whatsappLink = `https://wa.me/584120000000?text=${mensajeWhatsapp}`;
 
-                const iconClass = getIconForProduct(p.descripcion || '', p.categoria || '');
-                const imgHTML = p.foto ? `<img src="${p.foto}" alt="${p.descripcion}">` : `<i class="fa-solid ${iconClass}" style="font-size: 40px;"></i><span style="font-size:10px;">Imagen en proceso</span>`;
+                const iconClass = getIconForProduct(p.descripcion, p.categoria);
+                const imgHTML = (p.foto && p.foto.trim() !== "") 
+                                ? `<img src="${p.foto}" alt="${p.descripcion}" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\\'fa-solid ${iconClass}\\' style=\\'font-size: 40px;\\'></i><span style=\\'font-size:10px;\\'>Imagen no disponible</span>';">` 
+                                : `<i class="fa-solid ${iconClass}" style="font-size: 40px;"></i><span style="font-size:10px;">Imagen en proceso</span>`;
 
                 card.innerHTML = `
                     ${stockBadge}
@@ -489,8 +502,8 @@
             if (query) {
                 filtered = filtered.filter(p => 
                     (p.descripcion && p.descripcion.toLowerCase().includes(query)) || 
-                    (p.codigo && p.codigo.toLowerCase().includes(query)) ||
-                    (p.modelo && p.modelo.toLowerCase().includes(query))
+                    (p.codigo && p.codigo.toString().toLowerCase().includes(query)) ||
+                    (p.modelo && p.modelo.toString().toLowerCase().includes(query))
                 );
             }
 
@@ -530,14 +543,21 @@
             grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1; color: var(--gris-texto); padding: 40px;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando inventario en tiempo real...</p>';
             
             try {
-                const response = await fetch(GOOGLE_SHEET_API_URL);
+                // Se agrega cache: 'no-store' para obligar al navegador a buscar la data actualizada del Sheets siempre
+                const response = await fetch(https://script.google.com/macros/s/AKfycbyCVCU5HRXE8YMfuwOCJCE4ZpqVvhwH5kqeFBH0QhSgW69V5e3a9UKHuJi794VMePBq/exec, {
+                    method: 'GET',
+                    cache: 'no-store'
+                });
+                
                 if (!response.ok) throw new Error('Error en red');
                 const data = await response.json();
                 productsArray = data;
-                renderProducts(productsArray);
+                
+                // Aplica el filtro en caso de que le hayan dado a "Actualizar" y estén en una categoría específica
+                filterProducts();
             } catch (error) {
                 console.error("Error conectando con la API:", error);
-                grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: #dc3545; padding: 40px;">⚠️ Error al cargar catálogo. Por favor configure la URL de Apps Script.</p>`;
+                grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: #dc3545; padding: 40px;">⚠️ Error al cargar catálogo. Por favor verifique la URL de Apps Script y los permisos.</p>`;
             }
         }
 
@@ -551,6 +571,7 @@
             renderProducts(productsArray);
         });
 
+        // Inicia el catálogo al cargar la página
         window.onload = initCatalog;
     </script>
 </body>
