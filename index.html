@@ -444,7 +444,7 @@
     </a>
 
     <script>
-        // PEGA AQUÍ LA URL "EJECUTABLE" DE TU GOOGLE APPS SCRIPT
+        // TU URL "EJECUTABLE" DE GOOGLE APPS SCRIPT
         const GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbyCVCU5HRXE8YMfuwOCJCE4ZpqVvhwH5kqeFBH0QhSgW69V5e3a9UKHuJi794VMePBq/exec'; 
 
         // LISTA DE CATEGORÍAS A OCULTAR (en mayúsculas)
@@ -555,8 +555,10 @@
                     const whatsappLink = `https://wa.me/584142946200?text=${mensajeWhatsapp}`;
 
                     const iconClass = getIconForProduct(p.descripcion, p.categoria);
-                    const imgHTML = (p.foto && p.foto.trim() !== "") 
-                                    ? `<img src="${p.foto}" alt="${p.descripcion}" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\\'fa-solid ${iconClass}\\' style=\\'font-size: 40px;\\'></i><span style=\\'font-size:10px;\\'>Imagen no disponible</span>';">` 
+                    
+                    // CORRECCIÓN APLICADA: Ahora lee la variable url_foto en lugar de foto
+                    const imgHTML = (p.url_foto && p.url_foto.trim() !== "") 
+                                    ? `<img src="${p.url_foto}" alt="${p.descripcion}" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\\'fa-solid ${iconClass}\\' style=\\'font-size: 40px;\\'></i><span style=\\'font-size:10px;\\'>Imagen no disponible</span>';">` 
                                     : `<i class="fa-solid ${iconClass}" style="font-size: 40px;"></i><span style="font-size:10px;">Imagen en proceso</span>`;
 
                     card.innerHTML = `
