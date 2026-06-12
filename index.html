@@ -3,601 +3,435 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo Digital | SupplyParts</title>
+    <title>Catálogo Digital | Supplyparts</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Variables de Diseño con tus Colores Corporativos */
         :root {
-            --azul-primario: #0a369d;
-            --azul-oscuro: #07266e;
-            --amarillo-acento: #fcc000;
-            --amarillo-hover: #e0ab00;
+            --azul-supply: #0a369d;
+            --azul-oscuro: #06246b;
+            --amarillo-supply: #fcc000;
             --blanco: #ffffff;
-            --gris-fondo: #f8f9fa;
-            --gris-oscuro: #1a1a1a;
-            --gris-texto: #4a4a4a;
-            --gris-borde: #e0e0e0;
+            --gris-fondo: #f4f6f9;
+            --gris-texto: #4a5568;
+            --gris-oscuro: #1a202c;
+            --gris-borde: #e2e8f0;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
         }
 
         body {
             background-color: var(--gris-fondo);
             color: var(--gris-oscuro);
-            overflow-x: hidden;
         }
 
-        /* --- 1. TOP NAVBAR --- */
-        .navbar {
-            background-color: var(--azul-oscuro);
-            color: var(--blanco);
-            padding: 15px 5%;
+        /* --- TOP HEADER (BARRA AZUL) --- */
+        .top-header {
+            background-color: var(--azul-supply);
+            padding: 12px 5%;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            justify-content: space-between;
+            gap: 20px;
         }
 
         .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--amarillo-acento);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-        }
-
-        .nav-links {
-            display: flex;
-            list-style: none;
-            gap: 25px;
-        }
-
-        .nav-links a {
+            font-size: 26px;
+            font-weight: 700;
             color: var(--blanco);
             text-decoration: none;
-            font-size: 15px;
-            font-weight: 500;
-            transition: color 0.3s;
+            white-space: nowrap;
         }
 
-        .nav-links a:hover {
-            color: var(--amarillo-acento);
+        .logo span {
+            color: var(--amarillo-supply);
         }
 
-        .nav-icons {
+        .search-container {
+            flex: 1;
+            max-width: 650px;
             display: flex;
-            gap: 20px;
-            font-size: 18px;
-            align-items: center;
-        }
-
-        .nav-icons i {
-            cursor: pointer;
-            transition: color 0.3s;
-        }
-
-        .nav-icons i:hover {
-            color: var(--amarillo-acento);
-        }
-
-        /* --- 2. HERO BANNER --- */
-        .hero {
-            background: linear-gradient(135deg, var(--azul-primario) 0%, var(--azul-oscuro) 100%);
-            color: var(--blanco);
-            padding: 60px 5%;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            min-height: 400px;
-            position: relative;
-        }
-
-        .hero-content {
-            max-width: 50%;
-        }
-
-        .hero-content h1 {
-            font-size: 42px;
-            line-height: 1.2;
-            margin-bottom: 15px;
-            color: var(--blanco);
-        }
-
-        .hero-content p {
-            font-size: 18px;
-            margin-bottom: 25px;
-            opacity: 0.9;
-        }
-
-        .btn-primary {
-            background-color: var(--amarillo-acento);
-            color: var(--gris-oscuro);
-            border: none;
-            padding: 12px 30px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.2s;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-primary:hover {
-            background-color: var(--amarillo-hover);
-            transform: translateY(-2px);
-        }
-
-        .hero-image {
-            max-width: 45%;
-            display: flex;
-            justify-content: center;
-        }
-
-        .hero-image-placeholder {
-            width: 320px;
-            height: 320px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px dashed rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 70px;
-            color: var(--amarillo-acento);
-        }
-
-        /* --- 3. BARRA DE BENEFICIOS --- */
-        .benefits-bar {
-            background-color: #051b4f;
-            color: var(--blanco);
-            padding: 15px 5%;
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-            gap: 15px;
-            font-size: 14px;
-            border-bottom: 4px solid var(--amarillo-acento);
-        }
-
-        .benefit-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .benefit-item i {
-            color: var(--amarillo-acento);
-            font-size: 18px;
-        }
-
-        /* --- 4. SECCIÓN PRINCIPAL DE PRODUCTOS --- */
-        .catalog-container {
-            padding: 50px 5%;
-        }
-
-        .section-title {
-            text-align: center;
-            font-size: 28px;
-            margin-bottom: 30px;
-            position: relative;
-            padding-bottom: 10px;
-        }
-
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60px;
-            height: 4px;
-            background-color: var(--azul-primario);
-            border-radius: 2px;
-        }
-
-        .search-filter-wrapper {
-            max-width: 600px;
-            margin: 0 auto 40px auto;
-            display: flex;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            border-radius: 30px;
+            background-color: var(--blanco);
+            border-radius: 4px;
             overflow: hidden;
-            border: 2px solid var(--azul-primario);
         }
 
         .search-input {
-            flex: 1;
-            padding: 15px 25px;
+            width: 100%;
+            padding: 10px 15px;
             border: none;
             outline: none;
-            font-size: 16px;
+            font-size: 14px;
+            color: var(--gris-oscuro);
         }
 
         .search-btn {
-            background-color: var(--azul-primario);
-            color: var(--blanco);
+            background-color: var(--amarillo-supply);
+            color: var(--gris-oscuro);
             border: none;
             padding: 0 25px;
-            font-size: 18px;
+            font-weight: bold;
+            font-size: 14px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: background 0.2s;
         }
 
         .search-btn:hover {
-            background-color: var(--azul-oscuro);
+            background-color: #e0ab00;
         }
 
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .cart-box {
+            background-color: var(--azul-oscuro);
+            color: var(--blanco);
+            padding: 8px 15px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            font-size: 14px;
+            text-decoration: none;
+        }
+
+        /* --- MENÚ DE NAVEGACIÓN --- */
+        .main-nav {
+            background-color: var(--blanco);
+            border-bottom: 1px solid var(--gris-borde);
+            padding: 0 5%;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .nav-list {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            gap: 30px;
+        }
+
+        .nav-item a {
+            display: block;
+            padding: 15px 0;
+            color: var(--gris-texto);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            position: relative;
+            transition: color 0.2s;
+        }
+
+        .nav-item a:hover, .nav-item.active a {
+            color: var(--azul-supply);
+        }
+
+        .nav-item.active a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--azul-supply);
+        }
+
+        /* --- HERO BANNER (MÁXIMA SEGURIDAD) --- */
+        .hero-container {
+            padding: 30px 5% 15px 5%;
+        }
+
+        .hero-card {
+            background-color: var(--blanco);
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid var(--gris-borde);
+        }
+
+        .hero-card h1 {
+            color: var(--azul-supply);
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .hero-card p {
+            color: var(--gris-texto);
+            font-size: 15px;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+
+        /* --- CONTENEDOR DE CONTENIDO --- */
+        .main-container {
+            padding: 15px 5% 50px 5%;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--gris-oscuro);
+        }
+
+        .results-count {
+            font-size: 12px;
+            color: #a0aec0;
+        }
+
+        /* --- CUADRÍCULA DE PRODUCTOS / CATEGORÍAS --- */
         .products-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 30px;
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+            gap: 20px;
         }
 
         .product-card {
             background-color: var(--blanco);
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-radius: 6px;
             border: 1px solid var(--gris-borde);
+            padding: 15px;
             display: flex;
             flex-direction: column;
             position: relative;
-            transition: transform 0.3s, box-shadow 0.3s;
+            transition: box-shadow 0.2s;
         }
 
         .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
 
-        .product-badge {
+        .stock-badge {
             position: absolute;
-            top: 15px;
-            left: 15px;
-            background-color: var(--azul-primario);
-            color: var(--blanco);
-            padding: 5px 12px;
-            font-size: 12px;
+            top: 10px;
+            left: 10px;
+            padding: 3px 8px;
+            font-size: 11px;
             font-weight: bold;
+            color: var(--blanco);
             border-radius: 3px;
-            z-index: 10;
+            z-index: 5;
         }
 
-        .product-badge.sale {
-            background-color: #d9534f;
-        }
-
-        .product-image-container {
+        .image-placeholder {
             width: 100%;
-            height: 220px;
-            background-color: #fcfcfc;
+            height: 160px;
+            background-color: #f7fafc;
+            border-radius: 4px;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 20px;
-            border-bottom: 1px solid var(--gris-borde);
+            margin-bottom: 15px;
+            color: #cbd5e0;
+            font-size: 12px;
+            gap: 8px;
+            border: 1px dashed #e2e8f0;
         }
 
-        .product-image-container i {
-            font-size: 60px;
-            color: #ccc;
+        .image-placeholder img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
         }
 
         .product-info {
-            padding: 20px;
             display: flex;
             flex-direction: column;
             flex-grow: 1;
         }
 
-        .product-category {
-            font-size: 12px;
-            text-transform: uppercase;
-            color: var(--azul-primario);
-            font-weight: bold;
-            margin-bottom: 5px;
+        .product-code {
+            font-size: 11px;
+            color: #a0aec0;
+            margin-bottom: 4px;
         }
 
-        .product-title {
-            font-size: 16px;
+        .product-name {
+            font-size: 14px;
             font-weight: 600;
-            margin-bottom: 10px;
-            height: 44px;
+            color: var(--gris-oscuro);
+            margin-bottom: 8px;
+            line-height: 1.3;
+            height: 36px;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
 
+        .product-meta {
+            font-size: 12px;
+            color: var(--gris-texto);
+            margin-bottom: 12px;
+        }
+
         .product-price {
-            font-size: 20px;
-            font-weight: bold;
-            color: var(--azul-oscuro);
-            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--azul-supply);
             margin-top: auto;
+            margin-bottom: 12px;
         }
 
-        .product-price .original-price {
-            font-size: 14px;
-            color: #999;
-            text-decoration: line-through;
-            margin-left: 8px;
-            font-weight: normal;
-        }
-
-        .btn-card {
-            background-color: var(--amarillo-acento);
+        .btn-cotizar {
+            background-color: var(--amarillo-supply);
             color: var(--gris-oscuro);
             text-align: center;
-            padding: 10px;
-            border-radius: 5px;
+            padding: 8px;
+            border-radius: 4px;
             text-decoration: none;
             font-weight: bold;
-            font-size: 14px;
-            transition: background-color 0.3s;
+            font-size: 13px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
+            transition: background 0.2s;
         }
 
-        .btn-card:hover {
-            background-color: var(--amarillo-hover);
+        .btn-cotizar:hover {
+            background-color: #e0ab00;
         }
 
-        /* --- 5. BANNER PROMOCIONAL --- */
-        .promo-banner {
-            background: linear-gradient(rgba(10, 54, 157, 0.9), rgba(7, 38, 110, 0.95)), url('https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80');
-            background-size: cover;
-            background-position: center;
-            color: var(--blanco);
-            margin: 40px 5%;
-            padding: 50px;
-            border-radius: 8px;
+        /* --- BOTÓN FLOTANTE WHATSAPP --- */
+        .whatsapp-float {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #25d366;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .promo-text h2 {
-            font-size: 30px;
-            margin-bottom: 10px;
-        }
-
-        /* --- 6. NEWSLETTER & FOOTER --- */
-        .newsletter {
-            background-color: var(--azul-oscuro);
-            color: var(--blanco);
-            padding: 40px 5%;
-            text-align: center;
-            border-top: 4px solid var(--amarillo-acento);
-        }
-
-        .newsletter h3 {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-
-        .newsletter p {
-            margin-bottom: 20px;
-            opacity: 0.8;
-        }
-
-        .newsletter-form {
-            display: flex;
-            max-width: 500px;
-            margin: 0 auto;
-            border-radius: 5px;
-            overflow: hidden;
-        }
-
-        .newsletter-form input {
-            flex: 1;
-            padding: 12px 20px;
-            border: none;
-            outline: none;
-        }
-
-        .newsletter-form button {
-            background-color: var(--amarillo-acento);
-            color: var(--gris-oscuro);
-            border: none;
-            padding: 0 25px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .newsletter-form button:hover {
-            background-color: var(--amarillo-hover);
-        }
-
-        footer {
-            background-color: #051438;
-            color: #a0b2d6;
-            padding: 30px 5%;
-            font-size: 14px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .footer-links {
-            display: flex;
-            gap: 20px;
-        }
-
-        .footer-links a {
-            color: #a0b2d6;
+            font-size: 28px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
             text-decoration: none;
+            transition: transform 0.2s;
         }
 
-        .footer-links a:hover {
-            color: var(--blanco);
+        .whatsapp-float:hover {
+            transform: scale(1.08);
         }
 
-        .social-icons {
-            display: flex;
-            gap: 15px;
-            font-size: 18px;
-        }
-
-        .social-icons i {
-            cursor: pointer;
-            transition: color 0.3s;
-        }
-
-        .social-icons i:hover {
-            color: var(--amarillo-acento);
-        }
-
-        /* --- RESPONSIVIDAD --- */
+        /* --- RESPONSIVE --- */
         @media (max-width: 768px) {
-            .navbar, .hero, .promo-banner, footer {
+            .top-header {
                 flex-direction: column;
-                text-align: center;
+                padding: 15px;
             }
-            .nav-links {
-                display: none;
+            .search-container {
+                width: 100%;
+                order: 3;
             }
-            .hero-content, .hero-image {
-                max-width: 100%;
+            .main-nav {
+                justify-content: flex-start;
             }
-            .hero-image {
-                margin-top: 30px;
+            .nav-list {
+                gap: 15px;
+            }
+            .hero-card h1 {
+                font-size: 24px;
             }
         }
     </style>
 </head>
 <body>
 
-    <nav class="navbar">
-        <a href="#" class="logo">
-            <i class="fa-solid fa-gears"></i> SupplyParts
-        </a>
-        <ul class="nav-links">
-            <li><a href="#">Tienda</a></li>
-            <li><a href="#">Novedades</a></li>
-            <li><a href="#">Más Vendidos</a></li>
-            <li><a href="#">Nosotros</a></li>
-            <li><a href="#">Contacto</a></li>
-        </ul>
-        <div class="nav-icons">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <i class="fa-solid fa-user"></i>
-            <i class="fa-solid fa-cart-shopping" style="color: var(--amarillo-acento);"></i>
+    <header class="top-header">
+        <a href="#" class="logo" id="logoBtn">Supply<span>parts</span></a>
+        
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-input" placeholder="Busca cámaras, DVRs, Mikrotik, bobinas UTP..." onkeyup="handleSearch(event)">
+            <button class="search-btn" onclick="filterProducts()">Buscar</button>
         </div>
-    </nav>
 
-    <header class="hero">
-        <div class="hero-content">
-            <h1>Equipos de Alta Tecnología para tus Proyectos</h1>
-            <p>Explora repuestos, componentes de automatización y herramientas profesionales con el respaldo técnico que necesitas.</p>
-            <a href="#catalogo" class="btn-primary">Ver Catálogo</a>
-        </div>
-        <div class="hero-image">
-            <div class="hero-image-placeholder">
-                <i class="fa-solid fa-bolt-lightning"></i>
-            </div>
+        <div class="header-right">
+            <a href="#" class="cart-box">
+                <i class="fa-solid fa-cart-shopping"></i> Bs. 0.00
+            </a>
         </div>
     </header>
 
-    <section class="benefits-bar">
-        <div class="benefit-item">
-            <i class="fa-solid fa-truck"></i>
-            <span>Despacho y Logística Prioritaria</span>
-        </div>
-        <div class="benefit-item">
-            <i class="fa-solid fa-shield-halved"></i>
-            <span>Garantía de Soporte Técnico</span>
-        </div>
-        <div class="benefit-item">
-            <i class="fa-solid fa-headset"></i>
-            <span>Soporte de Ingeniería 24/7</span>
+    <nav class="main-nav">
+        <ul class="nav-list">
+            <li class="nav-item active" data-category="TODO"><a href="#" onclick="changeCategory(event, 'TODO')">CATÁLOGO COMPLETO</a></li>
+            <li class="nav-item" data-category="VIDEO VIGILAN"><a href="#" onclick="changeCategory(event, 'VIDEO VIGILAN')">CCTV ANALÓGICO</a></li>
+            <li class="nav-item" data-category="CÁMARAS IP"><a href="#" onclick="changeCategory(event, 'CÁMARAS IP')">CÁMARAS IP</a></li>
+            <li class="nav-item" data-category="REDES"><a href="#" onclick="changeCategory(event, 'REDES')">REDES Y WIFI</a></li>
+            <li class="nav-item" data-category="ELECTRICIDAD"><a href="#" onclick="changeCategory(event, 'ELECTRICIDAD')">CERCOS ELÉCTRICOS</a></li>
+            <li class="nav-item" data-category="TV-CABLE"><a href="#" onclick="changeCategory(event, 'TV-CABLE')">CABLES Y CONECTORES</a></li>
+        </ul>
+    </nav>
+
+    <section class="hero-container">
+        <div class="hero-card">
+            <h1>Máxima Seguridad para tus Proyectos</h1>
+            <p>Todo lo que necesitas como instalador en Maracay, con inventario en tiempo real.</p>
         </div>
     </section>
 
-    <main class="catalog-container" id="catalogo">
-        <h2 class="section-title">Productos Destacados</h2>
-
-        <div class="search-filter-wrapper">
-            <input type="text" id="searchInput" class="search-input" placeholder="Buscar por código, modelo o categoría..." onkeyup="filterProducts()">
-            <button class="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
+    <main class="main-container">
+        <div class="section-header">
+            <div class="section-title" id="catalogTitle">Todas las categorías</div>
+            <div class="results-count" id="resultsCount">(0 resultados)</div>
         </div>
 
         <div class="products-grid" id="productsGrid">
             </div>
     </main>
 
-    <section class="promo-banner">
-        <div class="promo-text">
-            <h2>Maximiza tu Eficiencia Operativa</h2>
-            <p>Componentes industriales esenciales para integración, control y monitoreo eléctrico.</p>
-        </div>
-        <a href="#" class="btn-primary" style="background-color: var(--amarillo-acento);">Explorar Soluciones</a>
-    </section>
-
-    <section class="newsletter">
-        <h3>Únete a nuestra Red Técnica</h3>
-        <p>Recibe listas de precios actualizadas, diagramas de referencia e invitaciones a capacitaciones.</p>
-        <div class="newsletter-form">
-            <input type="email" placeholder="Tu correo electrónico profesional">
-            <button type="button">Suscribirse</button>
-        </div>
-    </section>
-
-    <footer>
-        <p>&copy; 2026 SupplyParts. Todos los derechos reservados. Infraestructura optimizada.</p>
-        <div class="footer-links">
-            <a href="#">Términos</a>
-            <a href="#">Privacidad</a>
-            <a href="#">Contacto Técnico</a>
-        </div>
-        <div class="social-icons">
-            <i class="fa-brands fa-facebook"></i>
-            <i class="fa-brands fa-twitter"></i>
-            <i class="fa-brands fa-linkedin"></i>
-            <i class="fa-brands fa-instagram"></i>
-        </div>
-    </footer>
+    <a href="https://wa.me/584120000000" target="_blank" class="whatsapp-float">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
 
     <script>
-        // CONFIGURACIÓN: Aquí pegarás la URL de tu Google Apps Script en el futuro
-        const GOOGLE_SHEET_API_URL = ''; 
-
-        // Datos de prueba para que la web funcione en GitHub Pages inmediatamente
-        const mockProducts = [
-            { id: 1, titulo: "Audífonos Inalámbricos Pro-Tech", categoria: "Audio", precio: 89.99, originalPrecio: null, badge: "Nuevo", badgeClass: "", icono: "fa-headphones" },
-            { id: 2, titulo: "Reloj Inteligente Smartwatch Pro", categoria: "Wearables", precio: 199.00, originalPrecio: null, badge: "Destacado", badgeClass: "", icono: "fa-stopwatch" },
-            { id: 3, titulo: "Altavoz Bluetooth Portátil Industrial", categoria: "Audio", precio: 129.00, originalPrecio: null, badge: "", badgeClass: "", icono: "fa-volume-high" },
-            { id: 4, titulo: "Mouse Ergonómico Alta Precisión", categoria: "Accesorios", precio: 49.99, originalPrecio: 89.99, badge: "Oferta", badgeClass: "sale", icono: "fa-mouse" },
-            { id: 5, titulo: "Analizador de Redes Eléctricas CVM", categoria: "Medición", precio: 450.00, originalPrecio: null, badge: "Premium", badgeClass: "", icono: "fa-chart-line" },
-            { id: 6, titulo: "Módulo de Monitoreo Modbus RTU", categoria: "Automatización", precio: 185.00, originalPrecio: 210.00, badge: "Oferta", badgeClass: "sale", icono: "fa-network-wired" }
-        ];
+        // PEGA AQUÍ EL ENLACE EXACTO GENERADO EN GOOGLE APPS SCRIPT
+        const GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/TU_NUEVA_API_AQUI/exec'; 
 
         let productsArray = [];
+        let currentCategory = 'TODO';
+
+        function getIconForProduct(desc, cat) {
+            const d = desc.toLowerCase();
+            if (d.includes('cable') || d.includes('bobina')) return 'fa-wave-square';
+            if (d.includes('camara') || d.includes('ezviz') || d.includes('balun')) return 'fa-video';
+            if (d.includes('cerradura') || d.includes('electroiman')) return 'fa-lock';
+            if (d.includes('conector') || d.includes('jack') || d.includes('union')) return 'fa-plug';
+            if (d.includes('transformador') || d.includes('fuente')) return 'fa-bolt';
+            return 'fa-box';
+        }
 
         function renderProducts(products) {
             const grid = document.getElementById('productsGrid');
             grid.innerHTML = '';
+            
+            document.getElementById('resultsCount').innerText = `(${products.length} resultados)`;
 
             if(products.length === 0) {
-                grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--gris-texto); padding: 40px;">No se encontraron productos.</p>`;
+                grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: var(--gris-texto); padding: 40px;">No se encontraron productos en esta búsqueda o categoría.</p>`;
                 return;
             }
 
@@ -605,24 +439,38 @@
                 const card = document.createElement('div');
                 card.className = 'product-card';
                 
-                const badgeHTML = p.badge ? `<span class="product-badge ${p.badgeClass}">${p.badge}</span>` : '';
-                const oldPriceHTML = p.originalPrecio ? `<span class="original-price">$${Number(p.originalPrecio).toFixed(2)}</span>` : '';
+                const stockVal = Number(p.stock) || 0;
+                let stockBadge = '';
+                if (stockVal > 0) {
+                    stockBadge = `<span class="stock-badge" style="background-color: #28a745;">Stock: ${stockVal}</span>`;
+                } else {
+                    stockBadge = `<span class="stock-badge" style="background-color: #dc3545;">Agotado</span>`;
+                }
                 
-                // Botón de WhatsApp integrado
-                const mensajeWhatsapp = encodeURIComponent(`Hola SupplyParts, me interesa obtener información del producto: ${p.titulo} (Ref: ${p.id})`);
+                const precio = Number(p.precio1) || 0;
+                const precioTexto = precio > 0 ? `Bs. ${precio.toFixed(2)}` : 'Consultar';
+                
+                const mensajeWhatsapp = encodeURIComponent(`Hola SupplyParts, deseo cotizar el producto: ${p.descripcion} (Código: ${p.codigo})`);
                 const whatsappLink = `https://wa.me/584120000000?text=${mensajeWhatsapp}`;
 
+                const iconClass = getIconForProduct(p.descripcion || '', p.categoria || '');
+                const imgHTML = p.foto ? `<img src="${p.foto}" alt="${p.descripcion}">` : `<i class="fa-solid ${iconClass}" style="font-size: 40px;"></i><span style="font-size:10px;">Imagen en proceso</span>`;
+
                 card.innerHTML = `
-                    ${badgeHTML}
-                    <div class="product-image-container">
-                        <i class="fa-solid ${p.icono || 'fa-box-open'}"></i>
+                    ${stockBadge}
+                    <div class="image-placeholder">
+                        ${imgHTML}
                     </div>
                     <div class="product-info">
-                        <div class="product-category">${p.categoria}</div>
-                        <div class="product-title">${p.titulo}</div>
-                        <div class="product-price">$${Number(p.precio).toFixed(2)}${oldPriceHTML}</div>
-                        <a href="${whatsappLink}" target="_blank" class="btn-card">
-                            <i class="fa-brands fa-whatsapp"></i> Cotizar Ahora
+                        <div class="product-code">Cód: ${p.codigo || 'N/A'}</div>
+                        <div class="product-name" title="${p.descripcion}">${p.descripcion || 'Sin descripción'}</div>
+                        <div class="product-meta">
+                            ${p.modelo ? `<span>Mod: ${p.modelo}</span><br>` : ''}
+                            <span>Unidad: ${p.unidad || 'UND'}</span>
+                        </div>
+                        <div class="product-price">${precioTexto}</div>
+                        <a href="${whatsappLink}" target="_blank" class="btn-cotizar">
+                            <i class="fa-brands fa-whatsapp"></i> Cotizar
                         </a>
                     </div>
                 `;
@@ -632,28 +480,76 @@
 
         function filterProducts() {
             const query = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = productsArray.filter(p => 
-                p.titulo.toLowerCase().includes(query) || 
-                p.categoria.toLowerCase().includes(query)
-            );
+            let filtered = productsArray;
+
+            if (currentCategory !== 'TODO') {
+                filtered = filtered.filter(p => p.categoria && p.categoria.toUpperCase().trim() === currentCategory.toUpperCase().trim());
+            }
+
+            if (query) {
+                filtered = filtered.filter(p => 
+                    (p.descripcion && p.descripcion.toLowerCase().includes(query)) || 
+                    (p.codigo && p.codigo.toLowerCase().includes(query)) ||
+                    (p.modelo && p.modelo.toLowerCase().includes(query))
+                );
+            }
+
             renderProducts(filtered);
         }
 
-        async function initCatalog() {
-            if (GOOGLE_SHEET_API_URL) {
-                try {
-                    const response = await fetch(GOOGLE_SHEET_API_URL);
-                    const data = await response.json();
-                    productsArray = data;
-                } catch (error) {
-                    console.error("Error cargando API, usando datos locales:", error);
-                    productsArray = mockProducts;
-                }
-            } else {
-                productsArray = mockProducts;
+        function handleSearch(event) {
+            if (event.key === 'Enter') {
+                filterProducts();
             }
-            renderProducts(productsArray);
         }
+
+        function changeCategory(event, cat) {
+            event.preventDefault();
+            currentCategory = cat;
+
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.parentElement.classList.add('active');
+
+            const titles = {
+                'TODO': 'Todas las categorías',
+                'VIDEO VIGILAN': 'CCTV Analógico / Video Vigilancia',
+                'CÁMARAS IP': 'Cámaras IP',
+                'REDES': 'Redes y WIFI',
+                'ELECTRICIDAD': 'Cercos Eléctricos y Electricidad',
+                'TV-CABLE': 'Cables y Conectores'
+            };
+            document.getElementById('catalogTitle').innerText = titles[cat] || 'Productos';
+
+            filterProducts();
+        }
+
+        async function initCatalog() {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1; color: var(--gris-texto); padding: 40px;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando inventario en tiempo real...</p>';
+            
+            try {
+                const response = await fetch(GOOGLE_SHEET_API_URL);
+                if (!response.ok) throw new Error('Error en red');
+                const data = await response.json();
+                productsArray = data;
+                renderProducts(productsArray);
+            } catch (error) {
+                console.error("Error conectando con la API:", error);
+                grid.innerHTML = `<p style="text-align:center; grid-column: 1/-1; color: #dc3545; padding: 40px;">⚠️ Error al cargar catálogo. Por favor configure la URL de Apps Script.</p>`;
+            }
+        }
+
+        document.getElementById('logoBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('searchInput').value = '';
+            currentCategory = 'TODO';
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            document.querySelector('[data-category="TODO"]').classList.add('active');
+            document.getElementById('catalogTitle').innerText = 'Todas las categorías';
+            renderProducts(productsArray);
+        });
 
         window.onload = initCatalog;
     </script>
