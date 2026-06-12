@@ -29,6 +29,15 @@
             color: var(--gris-oscuro);
         }
 
+        /* --- CONTENEDOR FIJO (STICKY HEADER) --- */
+        .sticky-header-wrapper {
+            position: -webkit-sticky; /* Para compatibilidad con Safari */
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); /* Sombra para resaltar al hacer scroll */
+        }
+
         /* --- TOP HEADER --- */
         .top-header {
             background-color: var(--azul-supply);
@@ -114,8 +123,18 @@
             background-color: var(--blanco);
             border-bottom: 1px solid var(--gris-borde);
             padding: 0 5%;
-            overflow-x: auto;
+            overflow-x: auto; /* Permite scroll horizontal en el menú */
             white-space: nowrap;
+            scrollbar-width: thin; /* Estilo de barra de scroll para Firefox */
+        }
+
+        /* Ocultar barra de scroll en navegadores Webkit pero permitir el scroll */
+        .main-nav::-webkit-scrollbar {
+            height: 4px;
+        }
+        .main-nav::-webkit-scrollbar-thumb {
+            background-color: var(--gris-borde);
+            border-radius: 4px;
         }
 
         .nav-list {
@@ -379,28 +398,30 @@
 </head>
 <body>
 
-    <header class="top-header">
-        <a href="#" class="logo" id="logoBtn">Supply<span>parts</span></a>
-        
-        <div class="search-container">
-            <input type="text" id="searchInput" class="search-input" placeholder="Busca cámaras, alarmas, cables..." oninput="filterProducts()">
-            <div class="search-icon-box">
-                <i class="fa-solid fa-magnifying-glass"></i>
+    <div class="sticky-header-wrapper">
+        <header class="top-header">
+            <a href="#" class="logo" id="logoBtn">Supply<span>parts</span></a>
+            
+            <div class="search-container">
+                <input type="text" id="searchInput" class="search-input" placeholder="Busca cámaras, alarmas, cables..." oninput="filterProducts()">
+                <div class="search-icon-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </div>
             </div>
-        </div>
 
-        <div class="header-right">
-            <a onclick="initCatalog()" class="cart-box" title="Actualizar Inventario">
-                <i class="fa-solid fa-rotate"></i> Actualizar Info
-            </a>
-        </div>
-    </header>
+            <div class="header-right">
+                <a onclick="initCatalog()" class="cart-box" title="Actualizar Inventario">
+                    <i class="fa-solid fa-rotate"></i> Actualizar Info
+                </a>
+            </div>
+        </header>
 
-    <nav class="main-nav">
-        <ul class="nav-list" id="dynamicNav">
-            <li class="nav-item active"><a href="#">Cargando menú...</a></li>
-        </ul>
-    </nav>
+        <nav class="main-nav">
+            <ul class="nav-list" id="dynamicNav">
+                <li class="nav-item active"><a href="#">Cargando menú...</a></li>
+            </ul>
+        </nav>
+    </div>
 
     <section class="hero-container">
         <div class="hero-card">
@@ -423,7 +444,7 @@
     </a>
 
     <script>
-        // PEGA AQUÍ LA URL "EJECUTABLE" QUE COPIASTE DE APPS SCRIPT
+        // PEGA AQUÍ LA URL "EJECUTABLE" DE TU GOOGLE APPS SCRIPT
         const GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbyCVCU5HRXE8YMfuwOCJCE4ZpqVvhwH5kqeFBH0QhSgW69V5e3a9UKHuJi794VMePBq/exec'; 
 
         // LISTA DE CATEGORÍAS A OCULTAR (en mayúsculas)
@@ -432,7 +453,6 @@
         let productsArray = [];
         let currentCategory = 'TODO';
 
-        // Función para asignar íconos automáticamente según la categoría y descripción
         function getIconForProduct(desc, cat) {
             const d = (desc || '').toLowerCase();
             const c = (cat || '').toLowerCase();
@@ -458,25 +478,24 @@
             return 'fa-box';
         }
 
-        // Dibuja el menú de navegación basado en las categorías existentes
         function renderMenu() {
             const nav = document.getElementById('dynamicNav');
-            nav.innerHTML = '';
+            nav.innerHTML = ''; // Borra "Cargando menú..."
             
-            // 1. Añadir el botón de "CATÁLOGO COMPLETO" siempre al principio
+            // 1. Añadir el botón de "CATÁLOGO COMPLETO"
             const liTodo = document.createElement('li');
             liTodo.className = `nav-item ${currentCategory === 'TODO' ? 'active' : ''}`;
             liTodo.innerHTML = `<a href="#" onclick="changeCategory(event, 'TODO')">CATÁLOGO COMPLETO</a>`;
             nav.appendChild(liTodo);
             
-            // 2. Extraer categorías únicas de los productos (ignorando vacíos)
+            // 2. Extraer las categorías reales del Google Sheets
             let categorias = [...new Set(productsArray.map(p => (p.categoria || '').toUpperCase().trim()))];
             categorias = categorias.filter(c => c !== '');
             
             // 3. Ordenarlas alfabéticamente
             categorias.sort();
             
-            // 4. Crear los botones
+            // 4. Crear un botón para cada categoría encontrada
             categorias.forEach(cat => {
                 const li = document.createElement('li');
                 li.className = `nav-item ${currentCategory === cat ? 'active' : ''}`;
@@ -485,7 +504,6 @@
             });
         }
 
-        // Dibuja los productos en la cuadrícula
         function renderProducts(products) {
             const wrapper = document.getElementById('catalogWrapper');
             wrapper.innerHTML = '';
@@ -497,7 +515,6 @@
                 return;
             }
 
-            // Agrupar productos por categoría
             const groupedProducts = {};
             products.forEach(p => {
                 const catKey = (p.categoria || 'OTROS').toUpperCase().trim();
@@ -507,10 +524,7 @@
                 groupedProducts[catKey].push(p);
             });
 
-            // Renderizar cada categoría con su título y cuadrícula
             for (const cat in groupedProducts) {
-                
-                // Mostrar el título de la categoría solo si hay más de una (es decir, en TODO)
                 if (currentCategory === 'TODO' || Object.keys(groupedProducts).length > 1) {
                     const catHeader = document.createElement('h2');
                     catHeader.className = 'category-divider';
@@ -574,12 +588,10 @@
             const query = document.getElementById('searchInput').value.toLowerCase();
             let filtered = productsArray;
 
-            // Filtrar por categoría actual seleccionada en el menú
             if (currentCategory !== 'TODO') {
                 filtered = filtered.filter(p => p.categoria && p.categoria.toUpperCase().trim() === currentCategory.toUpperCase().trim());
             }
 
-            // Filtrar por barra de búsqueda
             if (query) {
                 filtered = filtered.filter(p => 
                     (p.descripcion && p.descripcion.toLowerCase().includes(query)) || 
@@ -588,39 +600,40 @@
                 );
             }
 
-            // ORDENAR: Mayor Stock -> Menor Stock -> Alfabético para agotados
+            // Ordenar por inventario (de mayor a agotado) y luego alfabético
             filtered.sort((a, b) => {
                 const stockA = Number(a.stock) || 0;
                 const stockB = Number(b.stock) || 0;
                 
                 if (stockB !== stockA) {
-                    return stockB - stockA; // De mayor a menor
+                    return stockB - stockA;
                 } else {
                     const descA = (a.descripcion || '').toLowerCase();
                     const descB = (b.descripcion || '').toLowerCase();
-                    return descA.localeCompare(descB); // Alfabético si tienen el mismo stock
+                    return descA.localeCompare(descB);
                 }
             });
 
             renderProducts(filtered);
         }
 
-        // Maneja el clic en las opciones del menú
         function changeCategory(event, cat) {
             event.preventDefault();
             currentCategory = cat;
-
-            // Actualizar clases activas (re-renderiza el menú para mover el subrayado azul)
+            
+            // Re-dibuja el menú para mover la línea azul a la categoría seleccionada
             renderMenu();
 
             document.getElementById('catalogTitle').innerText = cat === 'TODO' ? 'Todas las categorías' : cat;
 
-            // Limpia la barra de búsqueda al cambiar de categoría
+            // Limpia la búsqueda y filtra
             document.getElementById('searchInput').value = '';
             filterProducts();
+            
+            // Desplaza suavemente hacia arriba si el usuario estaba muy abajo
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Función principal al cargar la página
         async function initCatalog() {
             const wrapper = document.getElementById('catalogWrapper');
             wrapper.innerHTML = '<p style="text-align:center; color: var(--gris-texto); padding: 40px; font-size: 18px;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando inventario en tiempo real...</p>';
@@ -634,21 +647,20 @@
                 if (!response.ok) throw new Error('Error en red');
                 const data = await response.json();
                 
-                // FILTRO MAESTRO: Eliminar los productos que pertenezcan a categorías excluidas
+                // EXCLUSIÓN DE CATEGORÍAS INDESEADAS
                 productsArray = data.filter(p => {
                     const cat = (p.categoria || '').toUpperCase().trim();
                     return !EXCLUIR_CATEGORIAS.includes(cat);
                 });
                 
-                renderMenu(); // Generar el menú dinámico
-                filterProducts(); // Mostrar los productos
+                renderMenu();
+                filterProducts();
             } catch (error) {
                 console.error("Error conectando con la API:", error);
                 wrapper.innerHTML = `<p style="text-align:center; color: #e53e3e; padding: 40px; font-weight: bold;"><i class="fa-solid fa-triangle-exclamation"></i> Error al cargar catálogo. Por favor verifique la URL de Apps Script.</p>`;
             }
         }
 
-        // Botón del Logo para resetear todo
         document.getElementById('logoBtn').addEventListener('click', (e) => {
             e.preventDefault();
             currentCategory = 'TODO';
@@ -656,9 +668,9 @@
             document.getElementById('catalogTitle').innerText = 'Todas las categorías';
             renderMenu();
             filterProducts();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
-        // Iniciar al cargar
         window.onload = initCatalog;
     </script>
 </body>
