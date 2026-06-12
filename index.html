@@ -135,6 +135,7 @@
             text-transform: uppercase;
             position: relative;
             transition: color 0.2s;
+            white-space: nowrap;
         }
 
         .nav-item a:hover, .nav-item.active a {
@@ -382,7 +383,7 @@
         <a href="#" class="logo" id="logoBtn">Supply<span>parts</span></a>
         
         <div class="search-container">
-            <input type="text" id="searchInput" class="search-input" placeholder="Busca cámaras, DVRs, cables..." oninput="filterProducts()">
+            <input type="text" id="searchInput" class="search-input" placeholder="Busca cámaras, alarmas, cables..." oninput="filterProducts()">
             <div class="search-icon-box">
                 <i class="fa-solid fa-magnifying-glass"></i>
             </div>
@@ -396,13 +397,8 @@
     </header>
 
     <nav class="main-nav">
-        <ul class="nav-list">
-            <li class="nav-item active" data-category="TODO"><a href="#" onclick="changeCategory(event, 'TODO')">CATÁLOGO COMPLETO</a></li>
-            <li class="nav-item" data-category="VIDEO VIGILAN"><a href="#" onclick="changeCategory(event, 'VIDEO VIGILAN')">CCTV ANALÓGICO</a></li>
-            <li class="nav-item" data-category="CÁMARAS IP"><a href="#" onclick="changeCategory(event, 'CÁMARAS IP')">CÁMARAS IP</a></li>
-            <li class="nav-item" data-category="REDES"><a href="#" onclick="changeCategory(event, 'REDES')">REDES Y WIFI</a></li>
-            <li class="nav-item" data-category="ELECTRICIDAD"><a href="#" onclick="changeCategory(event, 'ELECTRICIDAD')">CERCOS ELÉCTRICOS</a></li>
-            <li class="nav-item" data-category="TV-CABLE"><a href="#" onclick="changeCategory(event, 'TV-CABLE')">CABLES Y CONECTORES</a></li>
+        <ul class="nav-list" id="dynamicNav">
+            <li class="nav-item active"><a href="#">Cargando menú...</a></li>
         </ul>
     </nav>
 
@@ -430,29 +426,66 @@
         // PEGA AQUÍ LA URL "EJECUTABLE" QUE COPIASTE DE APPS SCRIPT
         const GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbyCVCU5HRXE8YMfuwOCJCE4ZpqVvhwH5kqeFBH0QhSgW69V5e3a9UKHuJi794VMePBq/exec'; 
 
+        // LISTA DE CATEGORÍAS A OCULTAR (en mayúsculas)
+        const EXCLUIR_CATEGORIAS = ['DUCTOS', 'REFRIGERACION', 'SERVICIO TECNICO', 'AIRE ACONDICIONADO'];
+
         let productsArray = [];
         let currentCategory = 'TODO';
 
-        // Nombres formales para las categorías del Sheets
-        const categoryTitles = {
-            'TODO': 'Todas las categorías',
-            'VIDEO VIGILAN': 'CCTV Analógico / Video Vigilancia',
-            'CÁMARAS IP': 'Cámaras IP',
-            'REDES': 'Redes y WIFI',
-            'ELECTRICIDAD': 'Cercos Eléctricos y Electricidad',
-            'TV-CABLE': 'Cables y Conectores'
-        };
-
+        // Función para asignar íconos automáticamente según la categoría y descripción
         function getIconForProduct(desc, cat) {
             const d = (desc || '').toLowerCase();
+            const c = (cat || '').toLowerCase();
+            
+            if (c.includes('alarma')) return 'fa-bell';
+            if (c.includes('bateria')) return 'fa-car-battery';
+            if (c.includes('computacion') || c.includes('redes')) return 'fa-network-wired';
+            if (c.includes('herramientas')) return 'fa-screwdriver-wrench';
+            if (c.includes('porton')) return 'fa-door-open';
+            if (c.includes('incendio')) return 'fa-fire';
+            if (c.includes('tornilleria')) return 'fa-gear';
+            if (c.includes('tv') || c.includes('cable')) return 'fa-tv';
+            if (c.includes('electricidad') || c.includes('cerco')) return 'fa-bolt';
+            if (c.includes('video') || c.includes('camara')) return 'fa-video';
+            if (c.includes('rack')) return 'fa-server';
+            if (c.includes('fibra')) return 'fa-wifi';
+            if (c.includes('nevera')) return 'fa-snowflake';
+
             if (d.includes('cable') || d.includes('bobina')) return 'fa-wave-square';
-            if (d.includes('camara') || d.includes('ezviz') || d.includes('balun')) return 'fa-video';
             if (d.includes('cerradura') || d.includes('electroiman')) return 'fa-lock';
-            if (d.includes('conector') || d.includes('jack') || d.includes('union')) return 'fa-plug';
-            if (d.includes('transformador') || d.includes('fuente')) return 'fa-bolt';
+            if (d.includes('conector') || d.includes('jack')) return 'fa-plug';
+            
             return 'fa-box';
         }
 
+        // Dibuja el menú de navegación basado en las categorías existentes
+        function renderMenu() {
+            const nav = document.getElementById('dynamicNav');
+            nav.innerHTML = '';
+            
+            // 1. Añadir el botón de "CATÁLOGO COMPLETO" siempre al principio
+            const liTodo = document.createElement('li');
+            liTodo.className = `nav-item ${currentCategory === 'TODO' ? 'active' : ''}`;
+            liTodo.innerHTML = `<a href="#" onclick="changeCategory(event, 'TODO')">CATÁLOGO COMPLETO</a>`;
+            nav.appendChild(liTodo);
+            
+            // 2. Extraer categorías únicas de los productos (ignorando vacíos)
+            let categorias = [...new Set(productsArray.map(p => (p.categoria || '').toUpperCase().trim()))];
+            categorias = categorias.filter(c => c !== '');
+            
+            // 3. Ordenarlas alfabéticamente
+            categorias.sort();
+            
+            // 4. Crear los botones
+            categorias.forEach(cat => {
+                const li = document.createElement('li');
+                li.className = `nav-item ${currentCategory === cat ? 'active' : ''}`;
+                li.innerHTML = `<a href="#" onclick="changeCategory(event, '${cat}')">${cat}</a>`;
+                nav.appendChild(li);
+            });
+        }
+
+        // Dibuja los productos en la cuadrícula
         function renderProducts(products) {
             const wrapper = document.getElementById('catalogWrapper');
             wrapper.innerHTML = '';
@@ -464,7 +497,7 @@
                 return;
             }
 
-            // 1. AGRUPAR PRODUCTOS POR CATEGORÍA
+            // Agrupar productos por categoría
             const groupedProducts = {};
             products.forEach(p => {
                 const catKey = (p.categoria || 'OTROS').toUpperCase().trim();
@@ -474,21 +507,20 @@
                 groupedProducts[catKey].push(p);
             });
 
-            // 2. RENDERIZAR CADA CATEGORÍA CON SU TÍTULO Y CUADRÍCULA
+            // Renderizar cada categoría con su título y cuadrícula
             for (const cat in groupedProducts) {
                 
-                // Crea el título de la categoría
-                const displayTitle = categoryTitles[cat] || cat; // Usa el nombre bonito o el que venga del Sheets
-                const catHeader = document.createElement('h2');
-                catHeader.className = 'category-divider';
-                catHeader.innerText = displayTitle;
-                wrapper.appendChild(catHeader);
+                // Mostrar el título de la categoría solo si hay más de una (es decir, en TODO)
+                if (currentCategory === 'TODO' || Object.keys(groupedProducts).length > 1) {
+                    const catHeader = document.createElement('h2');
+                    catHeader.className = 'category-divider';
+                    catHeader.innerText = cat;
+                    wrapper.appendChild(catHeader);
+                }
 
-                // Crea la cuadrícula para los productos de esa categoría
                 const grid = document.createElement('div');
                 grid.className = 'products-grid';
 
-                // Renderiza los productos
                 groupedProducts[cat].forEach(p => {
                     const card = document.createElement('div');
                     card.className = 'product-card';
@@ -534,7 +566,6 @@
                     grid.appendChild(card);
                 });
 
-                // Agrega la cuadrícula al contenedor principal
                 wrapper.appendChild(grid);
             }
         }
@@ -543,12 +574,12 @@
             const query = document.getElementById('searchInput').value.toLowerCase();
             let filtered = productsArray;
 
-            // Filtrar por categoría actual del menú
+            // Filtrar por categoría actual seleccionada en el menú
             if (currentCategory !== 'TODO') {
                 filtered = filtered.filter(p => p.categoria && p.categoria.toUpperCase().trim() === currentCategory.toUpperCase().trim());
             }
 
-            // Filtrar por búsqueda en tiempo real
+            // Filtrar por barra de búsqueda
             if (query) {
                 filtered = filtered.filter(p => 
                     (p.descripcion && p.descripcion.toLowerCase().includes(query)) || 
@@ -574,22 +605,22 @@
             renderProducts(filtered);
         }
 
+        // Maneja el clic en las opciones del menú
         function changeCategory(event, cat) {
             event.preventDefault();
             currentCategory = cat;
 
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            event.currentTarget.parentElement.classList.add('active');
+            // Actualizar clases activas (re-renderiza el menú para mover el subrayado azul)
+            renderMenu();
 
-            document.getElementById('catalogTitle').innerText = categoryTitles[cat] || 'Productos';
+            document.getElementById('catalogTitle').innerText = cat === 'TODO' ? 'Todas las categorías' : cat;
 
-            // Al cambiar de categoría, limpia la barra de búsqueda para no confundir
+            // Limpia la barra de búsqueda al cambiar de categoría
             document.getElementById('searchInput').value = '';
             filterProducts();
         }
 
+        // Función principal al cargar la página
         async function initCatalog() {
             const wrapper = document.getElementById('catalogWrapper');
             wrapper.innerHTML = '<p style="text-align:center; color: var(--gris-texto); padding: 40px; font-size: 18px;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando inventario en tiempo real...</p>';
@@ -602,22 +633,28 @@
                 
                 if (!response.ok) throw new Error('Error en red');
                 const data = await response.json();
-                productsArray = data;
                 
-                filterProducts();
+                // FILTRO MAESTRO: Eliminar los productos que pertenezcan a categorías excluidas
+                productsArray = data.filter(p => {
+                    const cat = (p.categoria || '').toUpperCase().trim();
+                    return !EXCLUIR_CATEGORIAS.includes(cat);
+                });
+                
+                renderMenu(); // Generar el menú dinámico
+                filterProducts(); // Mostrar los productos
             } catch (error) {
                 console.error("Error conectando con la API:", error);
                 wrapper.innerHTML = `<p style="text-align:center; color: #e53e3e; padding: 40px; font-weight: bold;"><i class="fa-solid fa-triangle-exclamation"></i> Error al cargar catálogo. Por favor verifique la URL de Apps Script.</p>`;
             }
         }
 
+        // Botón del Logo para resetear todo
         document.getElementById('logoBtn').addEventListener('click', (e) => {
             e.preventDefault();
-            document.getElementById('searchInput').value = '';
             currentCategory = 'TODO';
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            document.querySelector('[data-category="TODO"]').classList.add('active');
+            document.getElementById('searchInput').value = '';
             document.getElementById('catalogTitle').innerText = 'Todas las categorías';
+            renderMenu();
             filterProducts();
         });
 
