@@ -636,7 +636,7 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        async function initCatalog() {
+                async function initCatalog() {
             const wrapper = document.getElementById('catalogWrapper');
             wrapper.innerHTML = '<p style="text-align:center; color: var(--gris-texto); padding: 40px; font-size: 18px;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando inventario en tiempo real...</p>';
             
@@ -649,10 +649,16 @@
                 if (!response.ok) throw new Error('Error en red');
                 const data = await response.json();
                 
-                // EXCLUSIÓN DE CATEGORÍAS INDESEADAS
+                // FILTRO MAESTRO: Excluye categorías indeseadas y productos "SIN DESCRIPCION"
                 productsArray = data.filter(p => {
                     const cat = (p.categoria || '').toUpperCase().trim();
-                    return !EXCLUIR_CATEGORIAS.includes(cat);
+                    const desc = (p.descripcion || '').toUpperCase().trim();
+                    
+                    const categoriaValida = !EXCLUIR_CATEGORIAS.includes(cat);
+                    const descripcionValida = desc !== 'SIN DESCRIPCION';
+                    
+                    // Solo guarda el producto si cumple ambas condiciones
+                    return categoriaValida && descripcionValida;
                 });
                 
                 renderMenu();
