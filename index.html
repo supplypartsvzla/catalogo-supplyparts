@@ -1,379 +1,433 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo Digital | Supplyparts</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --azul-supply: #0a369d; --azul-oscuro: #06246b; --amarillo-supply: #fcc000;
-            --blanco: #ffffff; --gris-fondo: #f4f6f9; --gris-texto: #4a5568;
-            --gris-oscuro: #1a202c; --gris-borde: #e2e8f0;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-        body { background-color: var(--gris-fondo); color: var(--gris-oscuro); }
-        .sticky-header-wrapper { position: -webkit-sticky; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .top-header { background-color: var(--azul-supply); padding: 12px 5%; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
-        .logo { font-size: 26px; font-weight: 700; color: var(--blanco); text-decoration: none; white-space: nowrap; }
-        .logo span { color: var(--amarillo-supply); }
-        .search-container { flex: 1; max-width: 650px; display: flex; background-color: var(--blanco); border-radius: 4px; overflow: hidden; border: 2px solid transparent; transition: border-color 0.2s; }
-        .search-container:focus-within { border-color: var(--amarillo-supply); }
-        .search-input { width: 100%; padding: 12px 15px; border: none; outline: none; font-size: 14px; color: var(--gris-oscuro); }
-        .search-icon-box { background-color: var(--blanco); color: var(--gris-texto); display: flex; align-items: center; padding: 0 15px; font-size: 16px; }
-        .header-right { display: flex; align-items: center; gap: 20px; }
-        .cart-box { background-color: var(--azul-oscuro); color: var(--blanco); padding: 10px 15px; border-radius: 4px; display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 14px; text-decoration: none; cursor: pointer; transition: background 0.2s; }
-        .cart-box:hover { background-color: #041849; }
-        .main-nav { background-color: var(--blanco); border-bottom: 1px solid var(--gris-borde); padding: 0 5%; overflow-x: auto; white-space: nowrap; scrollbar-width: thin; }
-        .main-nav::-webkit-scrollbar { height: 4px; }
-        .main-nav::-webkit-scrollbar-thumb { background-color: var(--gris-borde); border-radius: 4px; }
-        .nav-list { display: flex; justify-content: flex-start; list-style: none; gap: 30px; }
-        .nav-item a { display: block; padding: 15px 0; color: var(--gris-texto); text-decoration: none; font-size: 13px; font-weight: 600; text-transform: uppercase; position: relative; transition: color 0.2s; white-space: nowrap; }
-        .nav-item a:hover, .nav-item.active a { color: var(--azul-supply); }
-        .nav-item.active a::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background-color: var(--azul-supply); }
-        .hero-container { padding: 30px 5% 15px 5%; }
-        .hero-card { background-color: var(--blanco); border-radius: 8px; padding: 40px 20px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid var(--gris-borde); }
-        .hero-card h1 { color: var(--azul-supply); font-size: 32px; font-weight: 700; margin-bottom: 15px; }
-        .hero-card p { color: var(--gris-texto); font-size: 15px; max-width: 700px; margin: 0 auto; line-height: 1.5; }
-        .main-container { padding: 15px 5% 50px 5%; }
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .section-title { font-size: 18px; font-weight: 700; color: var(--gris-oscuro); }
-        .results-count { font-size: 13px; color: #a0aec0; font-weight: bold; }
-        .category-divider { font-size: 20px; color: var(--azul-oscuro); border-bottom: 2px solid var(--amarillo-supply); padding-bottom: 8px; margin: 35px 0 20px 0; font-weight: 800; text-transform: uppercase; }
-        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 20px; }
-        .product-card { background-color: var(--blanco); border-radius: 6px; border: 1px solid var(--gris-borde); padding: 15px; display: flex; flex-direction: column; position: relative; transition: transform 0.2s, box-shadow 0.2s; }
-        .product-card:hover { box-shadow: 0 6px 15px rgba(0,0,0,0.08); transform: translateY(-3px); }
-        .stock-badge { position: absolute; top: 10px; left: 10px; padding: 4px 10px; font-size: 11px; font-weight: bold; color: var(--blanco); border-radius: 4px; z-index: 5; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .image-placeholder { width: 100%; height: 160px; background-color: #f7fafc; border-radius: 4px; display: flex; flex-direction: column; justify-content: center; align-items: center; margin-bottom: 15px; color: #cbd5e0; font-size: 12px; gap: 8px; border: 1px dashed #e2e8f0; overflow: hidden; position: relative; }
-        .image-placeholder img { width: 100%; height: 100%; object-fit: contain; background-color: white; padding: 5px; }
-        .product-info { display: flex; flex-direction: column; flex-grow: 1; }
-        .out-of-category-badge { background-color: #ffe8e8; color: #d32f2f; font-size: 11px; font-weight: bold; padding: 5px 8px; border-radius: 4px; margin-bottom: 10px; display: inline-block; border: 1px solid #ffcdd2; }
-        .product-code { font-size: 11px; color: #a0aec0; margin-bottom: 4px; font-weight: 600; }
-        .product-name { font-size: 14px; font-weight: 700; color: var(--gris-oscuro); margin-bottom: 8px; line-height: 1.3; height: 36px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .product-meta { font-size: 12px; color: var(--gris-texto); margin-bottom: 8px; }
-        
-        /* Nuevo estilo para las especificaciones de la columna J */
-        .product-specs { font-size: 11px; color: #718096; margin-bottom: 12px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-style: italic; background-color: #f8fafc; padding: 4px 6px; border-radius: 4px; border-left: 2px solid var(--azul-supply); }
-        
-        .product-price { font-size: 18px; font-weight: 800; color: var(--azul-supply); margin-top: auto; margin-bottom: 15px; }
-        .btn-cotizar { background-color: var(--amarillo-supply); color: var(--gris-oscuro); text-align: center; padding: 10px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 6px; transition: background 0.2s; cursor: pointer;}
-        .btn-cotizar:hover { background-color: #e0ab00; }
-        .whatsapp-float { position: fixed; bottom: 20px; right: 20px; background-color: #25d366; color: white; width: 55px; height: 55px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 32px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 1000; text-decoration: none; transition: transform 0.2s; }
-        .whatsapp-float:hover { transform: scale(1.08); }
-        @media (max-width: 768px) {
-            .top-header { flex-direction: column; padding: 15px; }
-            .search-container { width: 100%; order: 3; }
-            .hero-card h1 { font-size: 24px; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supplyparts - Catálogo Digital</title>
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --blue-primary: #003399;
+      --yellow-secondary: #ffcc00;
+      --bg-light: #f4f6f9;
+      --text-dark: #1a1a1a;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-light);
+      color: var(--text-dark);
+    }
+
+    /* HEADER */
+    .header {
+      background-color: var(--blue-primary);
+      padding: 15px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      color: white;
+      gap: 15px;
+    }
+
+    .logo {
+      font-size: 28px;
+      font-weight: bold;
+    }
+    .logo span {
+      color: var(--yellow-secondary);
+    }
+
+    .search-container {
+      flex: 1;
+      max-width: 600px;
+      min-width: 280px;
+      position: relative;
+    }
+
+    .search-container input {
+      width: 100%;
+      padding: 12px 40px 12px 15px;
+      border-radius: 6px;
+      border: none;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    .btn-update {
+      background-color: transparent;
+      color: white;
+      border: 2px solid white;
+      padding: 10px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    .btn-update:hover {
+      background-color: white;
+      color: var(--blue-primary);
+    }
+
+    /* MENÚ DE PESTAÑAS SCON SCROLL HORIZONTAL */
+    .nav-tabs-container {
+      background: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      overflow-x: auto;
+      white-space: nowrap;
+      sticky: top;
+      z-index: 100;
+    }
+
+    .nav-tabs {
+      display: flex;
+      padding: 0 10px;
+      margin: 0;
+      list-style: none;
+    }
+
+    .tab-item {
+      padding: 15px 20px;
+      cursor: pointer;
+      font-weight: 600;
+      color: #555;
+      border-bottom: 3px solid transparent;
+      transition: 0.3s;
+      text-transform: uppercase;
+      font-size: 14px;
+    }
+
+    .tab-item:hover {
+      color: var(--blue-primary);
+    }
+
+    .tab-item.active {
+      color: var(--blue-primary);
+      border-bottom: 3px solid var(--blue-primary);
+    }
+
+    /* CONTENEDOR DE TARJETAS */
+    .catalog-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+      padding: 25px 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* TARJETA DE PRODUCTO */
+    .product-card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: transform 0.2s;
+    }
+
+    .product-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .stock-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background-color: #28a745;
+      color: white;
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: bold;
+      border-radius: 4px;
+      z-index: 10;
+    }
+    .stock-badge.no-stock {
+      background-color: #dc3545;
+    }
+
+    .image-container {
+      width: 100%;
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fafafa;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+
+    .image-container img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .product-info {
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+
+    .prod-code {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 5px;
+    }
+
+    .prod-title {
+      font-size: 15px;
+      font-weight: bold;
+      margin: 0 0 10px 0;
+      min-height: 40px;
+      line-height: 1.3;
+    }
+
+    .prod-meta {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+
+    .specs-box {
+      background-color: #f0f4fc;
+      border-left: 3px solid var(--blue-primary);
+      padding: 6px 10px;
+      font-size: 12px;
+      color: #444;
+      font-style: italic;
+      margin: 8px 0;
+      border-radius: 0 4px 4px 0;
+    }
+
+    .prod-price {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--blue-primary);
+      margin-top: auto;
+      margin-bottom: 12px;
+    }
+
+    .btn-cotizar {
+      background-color: var(--yellow-secondary);
+      color: var(--text-dark);
+      border: none;
+      width: 100%;
+      padding: 12px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 15px;
+      cursor: pointer;
+      transition: 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-cotizar:hover {
+      background-color: #e6b800;
+    }
+  </style>
 </head>
 <body>
 
-    <div class="sticky-header-wrapper">
-        <header class="top-header">
-            <a href="#" class="logo" id="logoBtn">Supply<span>parts</span></a>
-            <div class="search-container">
-                <input type="text" id="searchInput" class="search-input" placeholder="Busca cámaras, baterias, cables..." oninput="filterProducts()">
-                <div class="search-icon-box"><i class="fa-solid fa-magnifying-glass"></i></div>
-            </div>
-            <div class="header-right">
-                <a onclick="initCatalog()" class="cart-box" title="Actualizar Inventario">
-                    <i class="fa-solid fa-rotate"></i> Actualizar Info
-                </a>
-            </div>
-        </header>
-        <nav class="main-nav">
-            <ul class="nav-list" id="dynamicNav">
-                <li class="nav-item active"><a href="#">Cargando menú...</a></li>
-            </ul>
-        </nav>
+  <header class="header">
+    <div class="logo">Supply<span>parts</span></div>
+    <div class="search-container">
+      <input type="text" id="searchInput" placeholder="Busca cámaras, baterías, cables..." oninput="ejecutarBusqueda()">
     </div>
+    <button class="btn-update" onclick="cargarProductos()"><i class="fas fa-sync-alt"></i> Actualizar Info</button>
+  </header>
 
-    <section class="hero-container">
-        <div class="hero-card">
-            <h1>Máxima Seguridad para tus Proyectos</h1>
-            <p>Todo lo que necesitas como instalador, con inventario y disponibilidad en tiempo real.</p>
-        </div>
-    </section>
+  <div class="nav-tabs-container">
+    <ul class="nav-tabs" id="tabsMenu">
+      <li class="tab-item active" onclick="filtrarCategoria('mas_visitados', this)">Más Visitados</li>
+      <li class="tab-item" onclick="filtrarCategoria('alarmas', this)">Alarmas</li>
+      <li class="tab-item" onclick="filtrarCategoria('baterias', this)">Baterias</li>
+      <li class="tab-item" onclick="filtrarCategoria('cctv', this)">CCTV</li>
+      <li class="tab-item" onclick="filtrarCategoria('cerco electrico', this)">Cerco Eléctrico</li>
+      <li class="tab-item" onclick="filtrarCategoria('computacion', this)">Computación</li>
+      <li class="tab-item" onclick="filtrarCategoria('electricidad', this)">Electricidad</li>
+      <li class="tab-item" onclick="filtrarCategoria('fibra optica', this)">Fibra Óptica</li>
+      <li class="tab-item" onclick="filtrarCategoria('herramientas', this)">Herramientas</li>
+      <li class="tab-item" onclick="filtrarCategoria('porton electrico', this)">Portón Eléctrico</li>
+    </ul>
+  </div>
 
-    <main class="main-container">
-        <div class="section-header">
-            <div class="section-title" id="catalogTitle">Todas las categorías</div>
-            <div class="results-count" id="resultsCount">Cargando...</div>
-        </div>
-        <div id="catalogWrapper"></div>
+  <main class="catalog-container" id="catalogGrid">
     </main>
 
-    <a href="https://wa.me/584142946200" target="_blank" class="whatsapp-float">
-        <i class="fa-brands fa-whatsapp"></i>
-    </a>
+  <script>
+    // URL DE TU IMPLEMENTACIÓN DE GOOGLE APPS SCRIPT
+    const GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/1fvSKSGtsPxvUdIKkLDjjVVHEzLnJ23of0xuDFLdoTVE/exec'; 
+    const TELEFONO_WHATSAPP = '584240000000'; // <--- REEMPLAZA CON TU NÚMERO DE TELÉFONO REAL
 
-    <script>
-        const GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbyCVCU5HRXE8YMfuwOCJCE4ZpqVvhwH5kqeFBH0QhSgW69V5e3a9UKHuJi794VMePBq/exec'; 
-        const EXCLUIR_CATEGORIAS = ['DUCTOS', 'REFRIGERACION', 'SERVICIO TECNICO', 'NEVERAS', 'AIRE ACONDICIONADO'];
+    let listaProductos = [];
+    let timeoutBusqueda = null;
 
-        let productsArray = [];
-        let currentCategory = 'TODO';
-        let searchTimeout;
+    // Al cargar la página, se descargan los productos automáticamente
+    document.addEventListener('DOMContentLoaded', () => {
+      cargarProductos();
+    });
 
-        function getIconForProduct(desc, cat) {
-            const d = (desc || '').toLowerCase();
-            const c = (cat || '').toLowerCase();
-            if (c.includes('alarma')) return 'fa-bell';
-            if (c.includes('bateria')) return 'fa-car-battery';
-            if (c.includes('computacion') || c.includes('redes')) return 'fa-network-wired';
-            if (c.includes('herramientas')) return 'fa-screwdriver-wrench';
-            if (c.includes('porton')) return 'fa-door-open';
-            if (c.includes('incendio')) return 'fa-fire';
-            if (c.includes('tornilleria')) return 'fa-gear';
-            if (c.includes('tv') || c.includes('cable')) return 'fa-tv';
-            if (c.includes('electricidad') || c.includes('cerco')) return 'fa-bolt';
-            if (c.includes('video') || c.includes('camara')) return 'fa-video';
-            if (c.includes('rack')) return 'fa-server';
-            if (c.includes('fibra')) return 'fa-wifi';
-            if (c.includes('nevera')) return 'fa-snowflake';
-            if (d.includes('cable') || d.includes('bobina')) return 'fa-wave-square';
-            if (d.includes('cerradura') || d.includes('electroiman')) return 'fa-lock';
-            if (d.includes('conector') || d.includes('jack')) return 'fa-plug';
-            return 'fa-box';
-        }
-
-        function trackClick(codigoProducto) {
-            fetch(GOOGLE_SHEET_API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action: "click", codigo: codigoProducto })
-            }).catch(e => console.log("Error track click"));
-        }
-
-        function trackSearchEvent(products) {
-            if (!products || products.length === 0) return;
-            const productsToTrack = products.slice(0, 15).map(p => ({
-                codigo: p.codigo,
-                descripcion: p.descripcion,
-                tieneStock: (Number(p.stock) || 0) > 0
-            }));
-
-            fetch(GOOGLE_SHEET_API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action: "search", products: productsToTrack })
-            }).catch(e => console.log("Error track search"));
-        }
-
-        function renderMenu() {
-            const nav = document.getElementById('dynamicNav');
-            nav.innerHTML = ''; 
-            
-            const liTodo = document.createElement('li');
-            liTodo.className = `nav-item ${currentCategory === 'TODO' ? 'active' : ''}`;
-            liTodo.innerHTML = `<a href="#" onclick="changeCategory(event, 'TODO')">CATÁLOGO COMPLETO</a>`;
-            nav.appendChild(liTodo);
-
-            const liMasVisitados = document.createElement('li');
-            liMasVisitados.className = `nav-item ${currentCategory === 'MAS_VISITADOS' ? 'active' : ''}`;
-            liMasVisitados.innerHTML = `<a href="#" onclick="changeCategory(event, 'MAS_VISITADOS')">MÁS VISITADOS</a>`;
-            nav.appendChild(liMasVisitados);
-            
-            let categorias = [...new Set(productsArray.map(p => (p.categoria || '').toUpperCase().trim()))];
-            categorias = categorias.filter(c => c !== '');
-            categorias.sort();
-            
-            categorias.forEach(cat => {
-                const li = document.createElement('li');
-                li.className = `nav-item ${currentCategory === cat ? 'active' : ''}`;
-                li.innerHTML = `<a href="#" onclick="changeCategory(event, '${cat}')">${cat}</a>`;
-                nav.appendChild(li);
-            });
-        }
-
-        function renderProducts(products, isSearchActive = false) {
-            const wrapper = document.getElementById('catalogWrapper');
-            wrapper.innerHTML = '';
-            document.getElementById('resultsCount').innerText = `${products.length} productos listados`;
-
-            if(products.length === 0) {
-                wrapper.innerHTML = `<p style="text-align:center; color: var(--gris-texto); padding: 40px;">No se encontraron productos con esa búsqueda.</p>`;
-                return;
-            }
-
-            if (currentCategory === 'MAS_VISITADOS' && !isSearchActive) {
-                const catHeader = document.createElement('h2');
-                catHeader.className = 'category-divider';
-                catHeader.innerText = 'LOS PRODUCTOS MÁS BUSCADOS';
-                wrapper.appendChild(catHeader);
-                const grid = document.createElement('div');
-                grid.className = 'products-grid';
-                buildCards(products, grid, isSearchActive);
-                wrapper.appendChild(grid);
-                return;
-            }
-
-            const groupedProducts = {};
-            products.forEach(p => {
-                const catKey = (p.categoria || 'OTROS').toUpperCase().trim();
-                if (!groupedProducts[catKey]) groupedProducts[catKey] = [];
-                groupedProducts[catKey].push(p);
-            });
-
-            for (const cat in groupedProducts) {
-                if (currentCategory === 'TODO' || Object.keys(groupedProducts).length > 1 || isSearchActive) {
-                    const catHeader = document.createElement('h2');
-                    catHeader.className = 'category-divider';
-                    catHeader.innerText = cat;
-                    wrapper.appendChild(catHeader);
-                }
-                const grid = document.createElement('div');
-                grid.className = 'products-grid';
-                buildCards(groupedProducts[cat], grid, isSearchActive);
-                wrapper.appendChild(grid);
-            }
-        }
-
-        function buildCards(items, gridElement, isSearchActive) {
-            items.forEach(p => {
-                const card = document.createElement('div');
-                card.className = 'product-card';
-                
-                const stockVal = Number(p.stock) || 0;
-                let stockBadge = stockVal > 0 
-                    ? `<span class="stock-badge" style="background-color: #28a745;">Stock: ${stockVal}</span>` 
-                    : `<span class="stock-badge" style="background-color: #e53e3e;">Agotado</span>`;
-                
-                const precio = Number(String(p.precio1).replace(',', '.')) || 0;
-                const precioTexto = precio > 0 ? `Bs. ${precio.toFixed(2)}` : 'Consultar';
-                
-                const mensajeWhatsapp = encodeURIComponent(`Hola SupplyParts, deseo cotizar el producto: ${p.descripcion} (Código: ${p.codigo})`);
-                const whatsappLink = `https://wa.me/584142946200?text=${mensajeWhatsapp}`;
-                const iconClass = getIconForProduct(p.descripcion, p.categoria);
-                
-                const imgHTML = (p.url_foto && p.url_foto.trim() !== "") 
-                    ? `<img src="${p.url_foto}" alt="${p.descripcion}" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\\'fa-solid ${iconClass}\\' style=\\'font-size: 40px;\\'></i><span style=\\'font-size:10px;\\'>Imagen no disponible</span>';">` 
-                    : `<i class="fa-solid ${iconClass}" style="font-size: 40px;"></i><span style="font-size:10px;">Imagen en proceso</span>`;
-
-                let outOfCategoryWarning = '';
-                const pCat = (p.categoria || '').toUpperCase().trim();
-                if (isSearchActive && currentCategory !== 'TODO' && currentCategory !== 'MAS_VISITADOS' && pCat !== currentCategory) {
-                    outOfCategoryWarning = `<div class="out-of-category-badge"><i class="fa-solid fa-circle-exclamation"></i> Encontrado en: ${p.categoria}</div>`;
-                }
-
-                // Validación para extraer y limpiar la información de especificaciones (Columna J)
-                const specsHTML = p.especificaciones && p.especificaciones.toString().trim() !== "" && p.especificaciones.toString().trim() !== "0"
-                    ? `<div class="product-specs" title="${p.especificaciones}"><i class="fa-solid fa-circle-info"></i> ${p.especificaciones}</div>`
-                    : '';
-
-                card.innerHTML = `
-                    ${stockBadge}
-                    <div class="image-placeholder">${imgHTML}</div>
-                    <div class="product-info">
-                        ${outOfCategoryWarning}
-                        <div class="product-code">Cód: ${p.codigo || 'N/A'}</div>
-                        <div class="product-name" title="${p.descripcion}">${p.descripcion || 'Sin descripción'}</div>
-                        <div class="product-meta">
-                            ${p.modelo ? `<span>Mod: ${p.modelo}</span><br>` : ''}
-                            <span>Unidad: ${p.unidad || 'UND'}</span>
-                        </div>
-                        
-                        ${specsHTML}
-                        
-                        <div class="product-price">${precioTexto}</div>
-                        <a href="${whatsappLink}" target="_blank" class="btn-cotizar" onclick="trackClick('${p.codigo}')">
-                            <i class="fa-brands fa-whatsapp"></i> Cotizar
-                        </a>
-                    </div>
-                `;
-                gridElement.appendChild(card);
-            });
-        }
-
-        function filterProducts() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            let filtered = productsArray;
-
-            if (query) {
-                filtered = filtered.filter(p => 
-                    (p.descripcion && p.descripcion.toLowerCase().includes(query)) || 
-                    (p.codigo && p.codigo.toString().toLowerCase().includes(query)) ||
-                    (p.modelo && p.modelo.toString().toLowerCase().includes(query))
-                );
-
-                if (query.trim().length >= 3) {
-                    clearTimeout(searchTimeout);
-                    searchTimeout = setTimeout(() => {
-                        trackSearchEvent(filtered);
-                    }, 2000);
-                }
-            } else {
-                if (currentCategory === 'MAS_VISITADOS') {
-                    filtered = filtered.filter(p => (Number(p.clicks) || 0) > 0);
-                } else if (currentCategory !== 'TODO') {
-                    filtered = filtered.filter(p => p.categoria && p.categoria.toUpperCase().trim() === currentCategory.toUpperCase().trim());
-                }
-            }
-
-            filtered.sort((a, b) => {
-                const stockA = Number(a.stock) || 0;
-                const stockB = Number(b.stock) || 0;
-                const clicksA = Number(a.clicks) || 0;
-                const clicksB = Number(b.clicks) || 0;
-
-                if (stockA > 0 && stockB === 0) return -1;
-                if (stockA === 0 && stockB > 0) return 1;
-                if (clicksB !== clicksA) return clicksB - clicksA;
-                return (a.descripcion || '').toLowerCase().localeCompare((b.descripcion || '').toLowerCase());
-            });
-
-            if (currentCategory === 'MAS_VISITADOS' && !query) filtered = filtered.slice(0, 20);
-
-            renderProducts(filtered, query !== '');
-        }
-
-        function changeCategory(event, cat) {
-            event.preventDefault();
-            currentCategory = cat;
-            renderMenu();
-            
-            if (cat === 'TODO') document.getElementById('catalogTitle').innerText = 'Todas las categorías';
-            else if (cat === 'MAS_VISITADOS') document.getElementById('catalogTitle').innerText = 'Productos Más Visitados';
-            else document.getElementById('catalogTitle').innerText = cat;
-
-            document.getElementById('searchInput').value = '';
-            filterProducts();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        async function initCatalog() {
-            const wrapper = document.getElementById('catalogWrapper');
-            wrapper.innerHTML = '<p style="text-align:center; color: var(--gris-texto); padding: 40px; font-size: 18px;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando inventario en tiempo real...</p>';
-            try {
-                const response = await fetch(GOOGLE_SHEET_API_URL, { method: 'GET', cache: 'no-store' });
-                if (!response.ok) throw new Error('Error en red');
-                const data = await response.json();
-                
-                productsArray = data.filter(p => {
-                    const cat = (p.categoria || '').toUpperCase().trim();
-                    const desc = (p.descripcion || '').toUpperCase().trim();
-                    return !EXCLUIR_CATEGORIAS.includes(cat) && desc !== 'SIN DESCRIPCION';
-                });
-                
-                renderMenu();
-                filterProducts();
-            } catch (error) {
-                wrapper.innerHTML = `<p style="text-align:center; color: #e53e3e; padding: 40px; font-weight: bold;"><i class="fa-solid fa-triangle-exclamation"></i> Error al cargar catálogo. Por favor verifique la URL de Apps Script.</p>`;
-            }
-        }
-
-        document.getElementById('logoBtn').addEventListener('click', (e) => {
-            e.preventDefault();
-            currentCategory = 'TODO';
-            document.getElementById('searchInput').value = '';
-            document.getElementById('catalogTitle').innerText = 'Todas las categorías';
-            renderMenu();
-            filterProducts();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Descarga la información desde la Google Sheet
+    function cargarProductos() {
+      const grid = document.getElementById('catalogGrid');
+      grid.innerHTML = '<p style="text-align:center; width:100%; font-weight:bold;">Cargando catálogo inteligente...</p>';
+      
+      fetch(GOOGLE_SHEET_API_URL)
+        .then(response => response.json())
+        .then(data => {
+          listaProductos = data;
+          // Inicia mostrando directamente la pestaña activa de más visitados
+          procesarFiltroORden('mas_visitados');
+        })
+        .catch(error => {
+          grid.innerHTML = '<p style="text-align:center; width:100%; color:red;">Error al conectar con el inventario.</p>';
+          console.error(error);
         });
+    }
 
-        window.onload = initCatalog;
-    </script>
+    // Gestiona el cambio estético de las pestañas
+    function filtrarCategoria(categoria, elementoTab) {
+      document.getElementById('searchInput').value = ''; // Limpia buscador al cambiar sección
+      
+      const tabs = document.querySelectorAll('.tab-item');
+      tabs.forEach(tab => tab.classList.remove('active'));
+      elementoTab.classList.add('active');
+
+      procesarFiltroORden(categoria);
+    }
+
+    // Procesa los datos según la categoría seleccionada
+    function procesarFiltroORden(categoria) {
+      let filtrados = [...listaProductos];
+
+      if (categoria === 'mas_visitados') {
+        // Ordena de mayor a menor según los clicks registrados en la columna de tu Sheet
+        filtrados.sort((a, b) => (Number(b.clicks) || 0) - (Number(a.clicks) || 0));
+      } else {
+        // Filtra por coincidencia exacta de categorías limpias
+        filtrados = filtrados.filter(p => {
+          if (!p.categoria) return false;
+          return p.categoria.toString().toLowerCase().trim() === categoria.toLowerCase().trim();
+        });
+      }
+
+      renderizarTarjetas(filtrados);
+    }
+
+    // Dibuja las tarjetas en pantalla de forma idéntica a tu diseño original
+    function renderizarTarjetas(productos) {
+      const grid = document.getElementById('catalogGrid');
+      grid.innerHTML = '';
+
+      if (productos.length === 0) {
+        grid.innerHTML = '<p style="text-align:center; width:100%;">No hay productos disponibles en esta sección.</p>';
+        return;
+      }
+
+      productos.forEach(p => {
+        const stockActual = Number(p.stock) || 0;
+        const badgeStock = stockActual > 0 ? `Stock: ${stockActual}` : 'Sin Stock';
+        const claseStock = stockActual > 0 ? '' : 'no-stock';
+        const imagenUrl = p.url_foto || 'https://via.placeholder.com/200?text=Sin+Imagen';
+        const especificaciones = p.especificaciones ? `<div class="specs-box"><i class="fas fa-info-circle"></i> ${p.especificaciones}</div>` : '';
+        const modelo = p.modelo ? `<div class="prod-meta">Mod: ${p.modelo}</div>` : '';
+
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.innerHTML = `
+          <div class="stock-badge ${claseStock}">${badgeStock}</div>
+          <div class="image-container">
+            <img src="${imagenUrl}" alt="${p.descripcion}">
+          </div>
+          <div class="product-info">
+            <div class="prod-code">Cód: ${p.codigo || 'N/A'}</div>
+            <h3 class="prod-title">${p.descripcion || 'Producto sin nombre'}</h3>
+            ${modelo}
+            <div class="prod-meta">Unidad: ${p.unidad || 'UND'}</div>
+            ${especificaciones}
+            <div class="prod-price">Bs. ${Number(p.precio1).toFixed(2)}</div>
+            <button class="btn-cotizar" onclick="registrarClickYCotizar('${p.codigo}', '${p.descripcion}', '${p.precio1}')">
+              <i class="fab fa-whatsapp"></i> Cotizar
+            </button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // Envía +1 Click al doPost y abre WhatsApp
+    function registrarClickYCotizar(codigo, descripcion, precio) {
+      // 1. Envío asíncrono a Apps Script sin bloquear la navegación
+      fetch(GOOGLE_SHEET_API_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'click', codigo: codigo })
+      });
+
+      // 2. Construcción del mensaje para tu WhatsApp de Supplyparts
+      const texto = `Hola Supplyparts, deseo cotizar el siguiente producto:\n\n📌 *Descripción:* ${descripcion}\n🔢 *Código:* ${codigo}\n💰 *Precio:* Bs. ${Number(precio).toFixed(2)}`;
+      const urlWa = `https://wa.me/${TELEFONO_WHATSAPP}?text=${encodeURIComponent(texto)}`;
+      window.open(urlWa, '_blank');
+    }
+
+    // Buscador interactivo + Registro automático de lo que tus clientes buscan
+    function ejecutarBusqueda() {
+      const txt = document.getElementById('searchInput').value.toLowerCase().trim();
+      
+      // Quita la marca activa de las pestañas cuando se escribe en el buscador
+      const tabs = document.querySelectorAll('.tab-item');
+      tabs.forEach(tab => tab.classList.remove('active'));
+
+      if (txt === '') {
+        // Si borran el texto, regresa por defecto a MÁS VISITADOS
+        tabs[0].classList.add('active');
+        procesarFiltroORden('mas_visitados');
+        return;
+      }
+
+      // Filtrado local inmediato en la web
+      const resultado = listaProductos.filter(p => {
+        const desc = (p.descripcion || '').toLowerCase();
+        const cod = (p.codigo || '').toLowerCase();
+        const cat = (p.categoria || '').toLowerCase();
+        return desc.includes(txt) || cod.includes(txt) || cat.includes(txt);
+      });
+
+      renderizarTarjetas(resultado);
+
+      // --- ANALÍTICA DE BÚSQUEDA AUTOMÁTICA EN TU HOJA "mas_buscados" ---
+      // Debounce de 2 segundos para no saturar tu Google Sheet mientras el usuario escribe cada letra
+      clearTimeout(timeoutBusqueda);
+      timeoutBusqueda = setTimeout(() => {
+        if (resultado.length > 0) {
+          // Tomamos los primeros 3 resultados coincidentes para registrarlos en tu doPost
+          const payloadProducts = resultado.slice(0, 3).map(p => ({
+            codigo: p.codigo,
+            descripcion: p.descripcion,
+            tieneStock: (Number(p.stock) || 0) > 0
+          }));
+
+          fetch(GOOGLE_SHEET_API_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'search', products: payloadProducts })
+          });
+        }
+      }, 2000);
+    }
+  </script>
 </body>
 </html>
