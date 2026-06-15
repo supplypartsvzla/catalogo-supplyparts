@@ -73,13 +73,14 @@
       color: var(--blue-primary);
     }
 
-    /* MENÚ DE PESTAÑAS SCON SCROLL HORIZONTAL */
+    /* MENÚ DE PESTAÑAS */
     .nav-tabs-container {
       background: white;
       box-shadow: 0 2px 5px rgba(0,0,0,0.05);
       overflow-x: auto;
       white-space: nowrap;
-      sticky: top;
+      position: sticky;
+      top: 0;
       z-index: 100;
     }
 
@@ -152,14 +153,15 @@
       background-color: #dc3545;
     }
 
+    /* AJUSTE FIJO PARA FOTOS MÁS PEQUEÑAS Y CONTROLADAS */
     .image-container {
       width: 100%;
-      height: 200px;
+      height: 155px;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #fafafa;
-      padding: 10px;
+      background: #ffffff;
+      padding: 15px 10px 5px 10px;
       box-sizing: border-box;
     }
 
@@ -183,10 +185,10 @@
     }
 
     .prod-title {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: bold;
       margin: 0 0 10px 0;
-      min-height: 40px;
+      min-height: 38px;
       line-height: 1.3;
     }
 
@@ -196,19 +198,26 @@
       margin-bottom: 4px;
     }
 
+    /* DISEÑO COMPACTO DE ESPECIFICACIONES CON INTERACCIÓN CLIC */
     .specs-box {
       background-color: #f0f4fc;
       border-left: 3px solid var(--blue-primary);
       padding: 6px 10px;
-      font-size: 12px;
+      font-size: 11px;
       color: #444;
       font-style: italic;
       margin: 8px 0;
       border-radius: 0 4px 4px 0;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .specs-box:hover {
+      background-color: #e2ecf7;
     }
 
     .prod-price {
-      font-size: 20px;
+      font-size: 19px;
       font-weight: 800;
       color: var(--blue-primary);
       margin-top: auto;
@@ -239,6 +248,7 @@
 </head>
 <body>
 
+  <!-- BANNER / NAVBAR -->
   <header class="header">
     <div class="logo">Supply<span>parts</span></div>
     <div class="search-container">
@@ -247,38 +257,43 @@
     <button class="btn-update" onclick="cargarProductos()"><i class="fas fa-sync-alt"></i> Actualizar Info</button>
   </header>
 
+  <!-- NAVEGACIÓN POR CATEGORÍAS -->
   <div class="nav-tabs-container">
     <ul class="nav-tabs" id="tabsMenu">
       <li class="tab-item active" onclick="filtrarCategoria('mas_visitados', this)">Más Visitados</li>
       <li class="tab-item" onclick="filtrarCategoria('alarmas', this)">Alarmas</li>
-      <li class="tab-item" onclick="filtrarCategoria('baterias', this)">Baterias</li>
+      <li class="tab-item" onclick="filtrarCategoria('baterias', this)">Baterías</li>
       <li class="tab-item" onclick="filtrarCategoria('cctv', this)">CCTV</li>
-      <li class="tab-item" onclick="filtrarCategoria('cerco electrico', this)">Cerco Eléctrico</li>
+      <li class="tab-item" onclick="filtrarCategoria('cerco elektri', this)">Cerco Eléctrico</li>
       <li class="tab-item" onclick="filtrarCategoria('computacion', this)">Computación</li>
       <li class="tab-item" onclick="filtrarCategoria('electricidad', this)">Electricidad</li>
       <li class="tab-item" onclick="filtrarCategoria('fibra optica', this)">Fibra Óptica</li>
-      <li class="tab-item" onclick="filtrarCategoria('herramientas', this)">Herramientas</li>
+      <li class="tab-item" onclick="filtrarCategoria('herramienta', this)">Herramientas</li>
+      <li class="tab-item" onclick="filtrarCategoria('redes', this)">Redes</li>
+      <li class="tab-item" onclick="filtrarCategoria('racks', this)">Racks</li>
       <li class="tab-item" onclick="filtrarCategoria('porton electrico', this)">Portón Eléctrico</li>
     </ul>
   </div>
 
+  <!-- GRILLA DE PRODUCTOS -->
   <main class="catalog-container" id="catalogGrid">
-    </main>
+    <!-- Las tarjetas se generan dinámicamente -->
+  </main>
 
   <script>
-    // URL DE TU IMPLEMENTACIÓN DE GOOGLE APPS SCRIPT
-    const GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbyCVCU5HRXE8YMfuwOCJCE4ZpqVvhwH5kqeFBH0QhSgW69V5e3a9UKHuJi794VMePBq/exec'; 
-    const TELEFONO_WHATSAPP = '584142946200'; // <--- REEMPLAZA CON TU NÚMERO DE TELÉFONO REAL
+    // URL REAL DE TU IMPLEMENTACIÓN DE GOOGLE APPS SCRIPT
+    const GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/1fvSKSGtsPxvUdIKkLDjjVVHEzLnJ23of0xuDFLdoTVE/exec'; 
+    
+    // Tu número de WhatsApp de Supplyparts
+    const TELEFONO_WHATSAPP = '584142946200'; 
 
     let listaProductos = [];
     let timeoutBusqueda = null;
 
-    // Al cargar la página, se descargan los productos automáticamente
     document.addEventListener('DOMContentLoaded', () => {
       cargarProductos();
     });
 
-    // Descarga la información desde la Google Sheet
     function cargarProductos() {
       const grid = document.getElementById('catalogGrid');
       grid.innerHTML = '<p style="text-align:center; width:100%; font-weight:bold;">Cargando catálogo inteligente...</p>';
@@ -287,8 +302,7 @@
         .then(response => response.json())
         .then(data => {
           listaProductos = data;
-          // Inicia mostrando directamente la pestaña activa de más visitados
-          procesarFiltroORden('mas_visitados');
+          procesarFiltroOrden('mas_visitados');
         })
         .catch(error => {
           grid.innerHTML = '<p style="text-align:center; width:100%; color:red;">Error al conectar con el inventario.</p>';
@@ -296,36 +310,50 @@
         });
     }
 
-    // Gestiona el cambio estético de las pestañas
     function filtrarCategoria(categoria, elementoTab) {
-      document.getElementById('searchInput').value = ''; // Limpia buscador al cambiar sección
-      
+      document.getElementById('searchInput').value = ''; 
       const tabs = document.querySelectorAll('.tab-item');
       tabs.forEach(tab => tab.classList.remove('active'));
       elementoTab.classList.add('active');
-
-      procesarFiltroORden(categoria);
+      procesarFiltroOrden(categoria);
     }
 
-    // Procesa los datos según la categoría seleccionada
-    function procesarFiltroORden(categoria) {
+    function procesarFiltroOrden(categoria) {
       let filtrados = [...listaProductos];
 
       if (categoria === 'mas_visitados') {
-        // Ordena de mayor a menor según los clicks registrados en la columna de tu Sheet
         filtrados.sort((a, b) => (Number(b.clicks) || 0) - (Number(a.clicks) || 0));
       } else {
-        // Filtra por coincidencia exacta de categorías limpias
         filtrados = filtrados.filter(p => {
           if (!p.categoria) return false;
           return p.categoria.toString().toLowerCase().trim() === categoria.toLowerCase().trim();
         });
       }
-
       renderizarTarjetas(filtrados);
     }
 
-    // Dibuja las tarjetas en pantalla de forma idéntica a tu diseño original
+    // Procesa y limpia el Precio 2 de la base de datos para evitar valores vacíos o NaN
+    function formatearPrecio2(precioRaw) {
+      if (!precioRaw) return '0.00';
+      let stringLimpio = precioRaw.toString().trim().replace(/[^0-9.-]/g, '');
+      let numero = Number(stringLimpio);
+      return isNaN(numero) ? precioRaw.toString().trim() : numero.toFixed(2);
+    }
+
+    // Alternar vista corta y larga de especificaciones al hacer clic
+    function toggleEspecificacion(elemento, textoCorto, textoCompleto) {
+      const spanText = elemento.querySelector('.specs-text');
+      const estaExpandido = elemento.getAttribute('data-expanded') === 'true';
+
+      if (estaExpandido) {
+        spanText.textContent = textoCorto;
+        elemento.setAttribute('data-expanded', 'false');
+      } else {
+        spanText.textContent = textoCompleto;
+        elemento.setAttribute('data-expanded', 'true');
+      }
+    }
+
     function renderizarTarjetas(productos) {
       const grid = document.getElementById('catalogGrid');
       grid.innerHTML = '';
@@ -340,8 +368,27 @@
         const badgeStock = stockActual > 0 ? `Stock: ${stockActual}` : 'Sin Stock';
         const claseStock = stockActual > 0 ? '' : 'no-stock';
         const imagenUrl = p.url_foto || 'https://via.placeholder.com/200?text=Sin+Imagen';
-        const especificaciones = p.especificaciones ? `<div class="specs-box"><i class="fas fa-info-circle"></i> ${p.especificaciones}</div>` : '';
         const modelo = p.modelo ? `<div class="prod-meta">Mod: ${p.modelo}</div>` : '';
+        
+        // Formateo correcto usando Precio 2
+        const precioFormateado = formatearPrecio2(p.precio2);
+
+        // Lógica de resumen de Especificaciones (Recorte seguro)
+        let specsHTML = '';
+        if (p.especificaciones) {
+          const textoCompleto = p.especificaciones.toString().trim();
+          const textoCorto = textoCompleto.length > 75 ? textoCompleto.substring(0, 75) + '...' : textoCompleto;
+          
+          // Escapar las comillas para prevenir roturas en los atributos HTML
+          const safeCorto = textoCorto.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+          const safeCompleto = textoCompleto.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+          specsHTML = `
+            <div class="specs-box" data-expanded="false" onclick="toggleEspecificacion(this, '${safeCorto}', '${safeCompleto}')">
+              <i class="fas fa-info-circle"></i> <span class="specs-text">${textoCorto}</span>
+            </div>
+          `;
+        }
 
         const card = document.createElement('div');
         card.className = 'product-card';
@@ -355,9 +402,9 @@
             <h3 class="prod-title">${p.descripcion || 'Producto sin nombre'}</h3>
             ${modelo}
             <div class="prod-meta">Unidad: ${p.unidad || 'UND'}</div>
-            ${especificaciones}
-            <div class="prod-price">Bs. ${Number(p.precio1).toFixed(2)}</div>
-            <button class="btn-cotizar" onclick="registrarClickYCotizar('${p.codigo}', '${p.descripcion}', '${p.precio1}')">
+            ${specsHTML}
+            <div class="prod-price">$ BCV ${precioFormateado}</div>
+            <button class="btn-cotizar" onclick="registrarClickYCotizar('${p.codigo}', '${p.descripcion}', '${precioFormateado}')">
               <i class="fab fa-whatsapp"></i> Cotizar
             </button>
           </div>
@@ -366,9 +413,7 @@
       });
     }
 
-    // Envía +1 Click al doPost y abre WhatsApp
     function registrarClickYCotizar(codigo, descripcion, precio) {
-      // 1. Envío asíncrono a Apps Script sin bloquear la navegación
       fetch(GOOGLE_SHEET_API_URL, {
         method: 'POST',
         mode: 'no-cors',
@@ -376,28 +421,22 @@
         body: JSON.stringify({ action: 'click', codigo: codigo })
       });
 
-      // 2. Construcción del mensaje para tu WhatsApp de Supplyparts
-      const texto = `Hola Supplyparts, deseo cotizar el siguiente producto:\n\n📌 *Descripción:* ${descripcion}\n🔢 *Código:* ${codigo}\n💰 *Precio:* Bs. ${Number(precio).toFixed(2)}`;
+      const texto = `Hola Supplyparts, deseo cotizar el siguiente producto:\n\n📌 *Descripción:* ${descripcion}\n🔢 *Código:* ${codigo}\n💰 *Precio:* $ BCV ${precio}`;
       const urlWa = `https://wa.me/${TELEFONO_WHATSAPP}?text=${encodeURIComponent(texto)}`;
       window.open(urlWa, '_blank');
     }
 
-    // Buscador interactivo + Registro automático de lo que tus clientes buscan
     function ejecutarBusqueda() {
       const txt = document.getElementById('searchInput').value.toLowerCase().trim();
-      
-      // Quita la marca activa de las pestañas cuando se escribe en el buscador
       const tabs = document.querySelectorAll('.tab-item');
       tabs.forEach(tab => tab.classList.remove('active'));
 
       if (txt === '') {
-        // Si borran el texto, regresa por defecto a MÁS VISITADOS
         tabs[0].classList.add('active');
-        procesarFiltroORden('mas_visitados');
+        procesarFiltroOrden('mas_visitados');
         return;
       }
 
-      // Filtrado local inmediato en la web
       const resultado = listaProductos.filter(p => {
         const desc = (p.descripcion || '').toLowerCase();
         const cod = (p.codigo || '').toLowerCase();
@@ -407,12 +446,9 @@
 
       renderizarTarjetas(resultado);
 
-      // --- ANALÍTICA DE BÚSQUEDA AUTOMÁTICA EN TU HOJA "mas_buscados" ---
-      // Debounce de 2 segundos para no saturar tu Google Sheet mientras el usuario escribe cada letra
       clearTimeout(timeoutBusqueda);
       timeoutBusqueda = setTimeout(() => {
         if (resultado.length > 0) {
-          // Tomamos los primeros 3 resultados coincidentes para registrarlos en tu doPost
           const payloadProducts = resultado.slice(0, 3).map(p => ({
             codigo: p.codigo,
             descripcion: p.descripcion,
