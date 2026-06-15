@@ -34,17 +34,17 @@
         .cart-box { background-color: transparent; border: 1px solid var(--blanco); color: var(--blanco); padding: 8px 15px; border-radius: 6px; display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 13px; text-decoration: none; cursor: pointer; transition: background 0.3s; }
         .cart-box:hover { background-color: var(--blanco); color: var(--azul-supply); }
 
-        /* --- NUEVO MENÚ MODERNO (PÍLDORAS) --- */
+        /* --- MENÚ MODERNO (PÍLDORAS) --- */
         .main-nav { 
             background-color: var(--blanco); 
             padding: 10px 5%; 
             border-bottom: 1px solid var(--gris-borde);
             overflow-x: auto; 
             white-space: nowrap; 
-            -ms-overflow-style: none; /* Oculta scroll en IE/Edge */
-            scrollbar-width: none; /* Oculta scroll en Firefox */
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
-        .main-nav::-webkit-scrollbar { display: none; /* Oculta scroll en Chrome/Safari/Brave */ }
+        .main-nav::-webkit-scrollbar { display: none; }
         
         .nav-list { display: flex; justify-content: flex-start; list-style: none; gap: 10px; }
         .nav-item a { 
@@ -80,7 +80,7 @@
         
         .stock-badge { position: absolute; top: 8px; left: 8px; padding: 3px 8px; font-size: 10px; font-weight: bold; color: var(--blanco); border-radius: 4px; z-index: 5; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         
-        /* FOTOS MÁS PEQUEÑAS */
+        /* FOTOS REDUCIDAS */
         .image-placeholder { width: 100%; height: 110px; background-color: #ffffff; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; margin-bottom: 12px; color: #cbd5e0; font-size: 12px; gap: 6px; border: 1px dashed #e2e8f0; overflow: hidden; position: relative; }
         .image-placeholder img { width: 100%; height: 100%; object-fit: contain; padding: 2px; }
 
@@ -141,7 +141,7 @@
 
     <main class="main-container">
         <div class="section-header">
-            <div class="section-title" id="catalogTitle">Todas las categorías</div>
+            <div class="section-title" id="catalogTitle">🔥 Productos Más Visitados</div>
             <div class="results-count" id="resultsCount">Cargando...</div>
         </div>
         <div id="catalogWrapper"></div>
@@ -152,11 +152,13 @@
     </a>
 
     <script>
+        // EL ENLACE A TU APPS SCRIPT
         const GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbyCVCU5HRXE8YMfuwOCJCE4ZpqVvhwH5kqeFBH0QhSgW69V5e3a9UKHuJi794VMePBq/exec'; 
         const EXCLUIR_CATEGORIAS = ['DUCTOS', 'REFRIGERACION', 'SERVICIO TECNICO', 'NEVERAS', 'AIRE ACONDICIONADO'];
 
         let productsArray = [];
-        let currentCategory = 'TODO';
+        // SE CAMBIÓ LA CATEGORÍA INICIAL POR DEFECTO A "MAS_VISITADOS"
+        let currentCategory = 'MAS_VISITADOS';
         let searchTimeout;
 
         function getIconForProduct(desc, cat) {
@@ -206,11 +208,8 @@
             const nav = document.getElementById('dynamicNav');
             nav.innerHTML = ''; 
             
-            const liTodo = document.createElement('li');
-            liTodo.className = `nav-item ${currentCategory === 'TODO' ? 'active' : ''}`;
-            liTodo.innerHTML = `<a href="#" onclick="changeCategory(event, 'TODO')">CATÁLOGO COMPLETO</a>`;
-            nav.appendChild(liTodo);
-
+            // SE ELIMINÓ EL BOTÓN "CATÁLOGO COMPLETO"
+            
             const liMasVisitados = document.createElement('li');
             liMasVisitados.className = `nav-item ${currentCategory === 'MAS_VISITADOS' ? 'active' : ''}`;
             liMasVisitados.innerHTML = `<a href="#" onclick="changeCategory(event, 'MAS_VISITADOS')"><i class="fa-solid fa-fire"></i> MÁS VISITADOS</a>`;
@@ -234,7 +233,8 @@
             document.getElementById('resultsCount').innerText = `${products.length} Resultados`;
 
             if(products.length === 0) {
-                wrapper.innerHTML = `<p style="text-align:center; color: var(--gris-texto); padding: 40px; font-weight:bold;">No se encontraron productos con esa búsqueda.</p>`;
+                // Mensaje si no hay productos, muy útil si en "Más visitados" aún no hay clics
+                wrapper.innerHTML = `<p style="text-align:center; color: var(--gris-texto); padding: 40px; font-weight:bold;">Aún no hay productos en esta sección o búsqueda.</p>`;
                 return;
             }
 
@@ -258,7 +258,8 @@
             });
 
             for (const cat in groupedProducts) {
-                if (currentCategory === 'TODO' || Object.keys(groupedProducts).length > 1 || isSearchActive) {
+                // Al quitar "TODO", validamos para mostrar los separadores si hay búsqueda o múltiples categorías
+                if (Object.keys(groupedProducts).length > 1 || isSearchActive) {
                     const catHeader = document.createElement('h2');
                     catHeader.className = 'category-divider';
                     catHeader.innerText = cat;
@@ -281,7 +282,6 @@
                     ? `<span class="stock-badge" style="background-color: #28a745;">Stock: ${stockVal}</span>` 
                     : `<span class="stock-badge" style="background-color: #e53e3e;">Agotado</span>`;
                 
-                // LÓGICA DE PRECIO 2 CORREGIDA
                 const precioRaw = String(p.precio2 || '0');
                 const precioLimpio = precioRaw.replace(',', '.').replace(/[^0-9.-]/g, '');
                 const precio = Number(precioLimpio) || 0;
@@ -297,7 +297,8 @@
 
                 let outOfCategoryWarning = '';
                 const pCat = (p.categoria || '').toUpperCase().trim();
-                if (isSearchActive && currentCategory !== 'TODO' && currentCategory !== 'MAS_VISITADOS' && pCat !== currentCategory) {
+                // Ocultar la advertencia de categoría si estamos en MAS_VISITADOS sin búsqueda
+                if (isSearchActive && currentCategory !== 'MAS_VISITADOS' && pCat !== currentCategory) {
                     outOfCategoryWarning = `<div class="out-of-category-badge"><i class="fa-solid fa-circle-exclamation"></i> En: ${p.categoria}</div>`;
                 }
 
@@ -340,7 +341,7 @@
             } else {
                 if (currentCategory === 'MAS_VISITADOS') {
                     filtered = filtered.filter(p => (Number(p.clicks) || 0) > 0);
-                } else if (currentCategory !== 'TODO') {
+                } else {
                     filtered = filtered.filter(p => p.categoria && p.categoria.toUpperCase().trim() === currentCategory.toUpperCase().trim());
                 }
             }
@@ -367,8 +368,7 @@
             currentCategory = cat;
             renderMenu();
             
-            if (cat === 'TODO') document.getElementById('catalogTitle').innerText = 'Todas las categorías';
-            else if (cat === 'MAS_VISITADOS') document.getElementById('catalogTitle').innerText = '🔥 Productos Más Visitados';
+            if (cat === 'MAS_VISITADOS') document.getElementById('catalogTitle').innerText = '🔥 Productos Más Visitados';
             else document.getElementById('catalogTitle').innerText = cat;
 
             document.getElementById('searchInput').value = '';
@@ -387,7 +387,11 @@
                 productsArray = data.filter(p => {
                     const cat = (p.categoria || '').toUpperCase().trim();
                     const desc = (p.descripcion || '').toUpperCase().trim();
-                    return !EXCLUIR_CATEGORIAS.includes(cat) && desc !== 'SIN DESCRIPCION';
+                    
+                    const catValida = !EXCLUIR_CATEGORIAS.includes(cat);
+                    const descValida = !desc.includes('SIN DESCRIPCION');
+                    
+                    return catValida && descValida;
                 });
                 
                 renderMenu();
@@ -399,9 +403,9 @@
 
         document.getElementById('logoBtn').addEventListener('click', (e) => {
             e.preventDefault();
-            currentCategory = 'TODO';
+            currentCategory = 'MAS_VISITADOS';
             document.getElementById('searchInput').value = '';
-            document.getElementById('catalogTitle').innerText = 'Todas las categorías';
+            document.getElementById('catalogTitle').innerText = '🔥 Productos Más Visitados';
             renderMenu();
             filterProducts();
             window.scrollTo({ top: 0, behavior: 'smooth' });
