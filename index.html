@@ -34,7 +34,6 @@
         .cart-box { background-color: transparent; border: 1px solid var(--blanco); color: var(--blanco); padding: 8px 15px; border-radius: 6px; display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 13px; text-decoration: none; cursor: pointer; transition: background 0.3s; }
         .cart-box:hover { background-color: var(--blanco); color: var(--azul-supply); }
 
-        /* --- MENÚ MODERNO (PÍLDORAS) --- */
         .main-nav { 
             background-color: var(--blanco); 
             padding: 10px 5%; 
@@ -73,14 +72,12 @@
         .results-count { font-size: 12px; color: #a0aec0; font-weight: bold; background: var(--blanco); padding: 4px 10px; border-radius: 12px; border: 1px solid var(--gris-borde); }
         .category-divider { font-size: 16px; color: var(--azul-oscuro); border-bottom: 2px solid var(--amarillo-supply); padding-bottom: 5px; margin: 30px 0 15px 0; font-weight: 800; text-transform: uppercase; }
 
-        /* --- GRILLA OPTIMIZADA PARA MÓVILES (2 COLUMNAS) --- */
         .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
         .product-card { background-color: var(--blanco); border-radius: 8px; border: 1px solid var(--gris-borde); padding: 10px; display: flex; flex-direction: column; position: relative; transition: transform 0.2s, box-shadow 0.2s; }
         .product-card:hover { box-shadow: 0 6px 15px rgba(0,0,0,0.08); transform: translateY(-3px); }
         
         .stock-badge { position: absolute; top: 8px; left: 8px; padding: 3px 8px; font-size: 10px; font-weight: bold; color: var(--blanco); border-radius: 4px; z-index: 5; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         
-        /* FOTOS REDUCIDAS */
         .image-placeholder { width: 100%; height: 110px; background-color: #ffffff; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; margin-bottom: 12px; color: #cbd5e0; font-size: 12px; gap: 6px; border: 1px dashed #e2e8f0; overflow: hidden; position: relative; }
         .image-placeholder img { width: 100%; height: 100%; object-fit: contain; padding: 2px; }
 
@@ -152,14 +149,67 @@
     </a>
 
     <script>
-        // EL ENLACE A TU APPS SCRIPT
         const GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbyCVCU5HRXE8YMfuwOCJCE4ZpqVvhwH5kqeFBH0QhSgW69V5e3a9UKHuJi794VMePBq/exec'; 
         const EXCLUIR_CATEGORIAS = ['DUCTOS', 'REFRIGERACION', 'SERVICIO TECNICO', 'NEVERAS', 'AIRE ACONDICIONADO'];
 
         let productsArray = [];
-        // SE CAMBIÓ LA CATEGORÍA INICIAL POR DEFECTO A "MAS_VISITADOS"
         let currentCategory = 'MAS_VISITADOS';
         let searchTimeout;
+
+        // --- FUNCIONES DEL MOTOR DE BÚSQUEDA AVANZADO ---
+        
+        // 1. Quitar acentos y llevar a minúsculas
+        function normalizarTexto(texto) {
+            if (!texto) return '';
+            return texto.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        }
+
+        // 2. Calcular la distancia entre palabras (Tolerancia a Typos)
+        function distanciaLevenshtein(a, b) {
+            const matriz = Array(b.length + 1).fill(null).map(() => Array(a.length + 1).fill(null));
+            for (let i = 0; i <= a.length; i++) matriz[0][i] = i;
+            for (let j = 0; j <= b.length; j++) matriz[j][0] = j;
+            for (let j = 1; j <= b.length; j++) {
+                for (let i = 1; i <= a.length; i++) {
+                    const costoSustitucion = a[i - 1] === b[j - 1] ? 0 : 1;
+                    matriz[j][i] = Math.min(
+                        matriz[j][i - 1] + 1, // Borrado
+                        matriz[j - 1][i] + 1, // Inserción
+                        matriz[j - 1][i - 1] + costoSustitucion // Sustitución
+                    );
+                }
+            }
+            return matriz[b.length][a.length];
+        }
+
+        // 3. Cerebro de búsqueda semántica
+        function busquedaAvanzada(query, textoProducto) {
+            const qNorm = normalizarTexto(query);
+            const tNorm = normalizarTexto(textoProducto);
+            
+            // Si hay coincidencia exacta directa, es instantáneo
+            if (tNorm.includes(qNorm)) return true;
+
+            // Búsqueda tokenizada: divide lo que escribió el usuario por espacios
+            const palabrasQuery = qNorm.split(' ').filter(p => p.trim() !== '');
+            const palabrasTexto = tNorm.split(/[\s,.-]+/);
+
+            // Verifica que TODAS las palabras buscadas existan en el producto
+            return palabrasQuery.every(pq => {
+                if (tNorm.includes(pq)) return true;
+
+                // Si no existe, permite 1 error en palabras largas (typo)
+                const maxErrores = pq.length > 4 ? 1 : 0;
+                if (maxErrores > 0) {
+                    return palabrasTexto.some(pt => {
+                        if (Math.abs(pt.length - pq.length) > maxErrores + 1) return false;
+                        return distanciaLevenshtein(pq, pt) <= maxErrores;
+                    });
+                }
+                return false;
+            });
+        }
+        // ------------------------------------------------
 
         function getIconForProduct(desc, cat) {
             const d = (desc || '').toLowerCase();
@@ -208,8 +258,6 @@
             const nav = document.getElementById('dynamicNav');
             nav.innerHTML = ''; 
             
-            // SE ELIMINÓ EL BOTÓN "CATÁLOGO COMPLETO"
-            
             const liMasVisitados = document.createElement('li');
             liMasVisitados.className = `nav-item ${currentCategory === 'MAS_VISITADOS' ? 'active' : ''}`;
             liMasVisitados.innerHTML = `<a href="#" onclick="changeCategory(event, 'MAS_VISITADOS')"><i class="fa-solid fa-fire"></i> MÁS VISITADOS</a>`;
@@ -233,7 +281,6 @@
             document.getElementById('resultsCount').innerText = `${products.length} Resultados`;
 
             if(products.length === 0) {
-                // Mensaje si no hay productos, muy útil si en "Más visitados" aún no hay clics
                 wrapper.innerHTML = `<p style="text-align:center; color: var(--gris-texto); padding: 40px; font-weight:bold;">Aún no hay productos en esta sección o búsqueda.</p>`;
                 return;
             }
@@ -258,7 +305,6 @@
             });
 
             for (const cat in groupedProducts) {
-                // Al quitar "TODO", validamos para mostrar los separadores si hay búsqueda o múltiples categorías
                 if (Object.keys(groupedProducts).length > 1 || isSearchActive) {
                     const catHeader = document.createElement('h2');
                     catHeader.className = 'category-divider';
@@ -297,7 +343,6 @@
 
                 let outOfCategoryWarning = '';
                 const pCat = (p.categoria || '').toUpperCase().trim();
-                // Ocultar la advertencia de categoría si estamos en MAS_VISITADOS sin búsqueda
                 if (isSearchActive && currentCategory !== 'MAS_VISITADOS' && pCat !== currentCategory) {
                     outOfCategoryWarning = `<div class="out-of-category-badge"><i class="fa-solid fa-circle-exclamation"></i> En: ${p.categoria}</div>`;
                 }
@@ -324,15 +369,15 @@
         }
 
         function filterProducts() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
+            const query = document.getElementById('searchInput').value;
             let filtered = productsArray;
 
-            if (query) {
-                filtered = filtered.filter(p => 
-                    (p.descripcion && p.descripcion.toLowerCase().includes(query)) || 
-                    (p.codigo && p.codigo.toString().toLowerCase().includes(query)) ||
-                    (p.modelo && p.modelo.toString().toLowerCase().includes(query))
-                );
+            if (query.trim() !== '') {
+                // INTEGRACIÓN DEL NUEVO MOTOR DE BÚSQUEDA
+                filtered = filtered.filter(p => {
+                    const textoBuscable = [p.descripcion, p.codigo, p.modelo, p.categoria].filter(Boolean).join(" ");
+                    return busquedaAvanzada(query, textoBuscable);
+                });
 
                 if (query.trim().length >= 3) {
                     clearTimeout(searchTimeout);
@@ -358,9 +403,9 @@
                 return (a.descripcion || '').toLowerCase().localeCompare((b.descripcion || '').toLowerCase());
             });
 
-            if (currentCategory === 'MAS_VISITADOS' && !query) filtered = filtered.slice(0, 20);
+            if (currentCategory === 'MAS_VISITADOS' && query.trim() === '') filtered = filtered.slice(0, 20);
 
-            renderProducts(filtered, query !== '');
+            renderProducts(filtered, query.trim() !== '');
         }
 
         function changeCategory(event, cat) {
