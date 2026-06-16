@@ -18,7 +18,7 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-        body { background-color: var(--gris-fondo); color: var(--gris-oscuro); }
+        body { background-color: var(--gris-fondo); color: var(--gris-oscuro); overflow-x: hidden; }
 
         .sticky-header-wrapper { position: -webkit-sticky; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .top-header { background-color: var(--azul-supply); padding: 12px 5%; display: flex; align-items: center; justify-content: space-between; gap: 15px; flex-wrap: wrap; }
@@ -34,16 +34,18 @@
         .cart-box { background-color: transparent; border: 1px solid var(--blanco); color: var(--blanco); padding: 8px 15px; border-radius: 6px; display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 13px; text-decoration: none; cursor: pointer; transition: background 0.3s; }
         .cart-box:hover { background-color: var(--blanco); color: var(--azul-supply); }
 
+        /* --- MENÚ MODERNO (CARRUSEL) --- */
         .main-nav { 
             background-color: var(--blanco); 
             padding: 10px 5%; 
             border-bottom: 1px solid var(--gris-borde);
             overflow-x: auto; 
             white-space: nowrap; 
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+            -ms-overflow-style: none; /* IE y Edge */
+            scrollbar-width: none; /* Firefox */
+            scroll-behavior: auto; /* Permite control preciso por JS */
         }
-        .main-nav::-webkit-scrollbar { display: none; }
+        .main-nav::-webkit-scrollbar { display: none; /* Chrome, Safari y Opera */ }
         
         .nav-list { display: flex; justify-content: flex-start; list-style: none; gap: 10px; }
         .nav-item a { 
@@ -72,6 +74,7 @@
         .results-count { font-size: 12px; color: #a0aec0; font-weight: bold; background: var(--blanco); padding: 4px 10px; border-radius: 12px; border: 1px solid var(--gris-borde); }
         .category-divider { font-size: 16px; color: var(--azul-oscuro); border-bottom: 2px solid var(--amarillo-supply); padding-bottom: 5px; margin: 30px 0 15px 0; font-weight: 800; text-transform: uppercase; }
 
+        /* --- GRILLA OPTIMIZADA PARA MÓVILES --- */
         .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
         .product-card { background-color: var(--blanco); border-radius: 8px; border: 1px solid var(--gris-borde); padding: 10px; display: flex; flex-direction: column; position: relative; transition: transform 0.2s, box-shadow 0.2s; }
         .product-card:hover { box-shadow: 0 6px 15px rgba(0,0,0,0.08); transform: translateY(-3px); }
@@ -122,7 +125,7 @@
             </div>
         </header>
 
-        <nav class="main-nav">
+        <nav class="main-nav" id="scrollNav">
             <ul class="nav-list" id="dynamicNav">
                 <li class="nav-item active"><a href="#">Cargando menú...</a></li>
             </ul>
@@ -156,15 +159,43 @@
         let currentCategory = 'MAS_VISITADOS';
         let searchTimeout;
 
-        // --- FUNCIONES DEL MOTOR DE BÚSQUEDA AVANZADO ---
-        
-        // 1. Quitar acentos y llevar a minúsculas
+        // --- SISTEMA DE CARRUSEL AUTOMÁTICO PARA EL MENÚ ---
+        let navScrollTimer;
+        let isNavHovered = false;
+
+        function startNavCarousel() {
+            const nav = document.getElementById('scrollNav');
+            if (!nav) return;
+            if (navScrollTimer) clearInterval(navScrollTimer);
+            
+            navScrollTimer = setInterval(() => {
+                if (isNavHovered) return; // Se pausa si el usuario toca o pasa el mouse
+                
+                // Si llega al final del menú, lo reinicia al principio
+                if (nav.scrollLeft + nav.clientWidth >= nav.scrollWidth - 1) {
+                    nav.scrollLeft = 0;
+                } else {
+                    nav.scrollLeft += 1; // Velocidad de desplazamiento
+                }
+            }, 30); // 30ms = movimiento continuo y fluido
+        }
+
+        // Controladores para pausar el carrusel cuando el usuario interactúa
+        const navContainer = document.getElementById('scrollNav');
+        navContainer.addEventListener('mouseenter', () => isNavHovered = true);
+        navContainer.addEventListener('mouseleave', () => isNavHovered = false);
+        navContainer.addEventListener('touchstart', () => isNavHovered = true, {passive: true});
+        navContainer.addEventListener('touchend', () => {
+            setTimeout(() => { isNavHovered = false; }, 1000); // Reanuda 1 segundo después de soltar
+        });
+        // ----------------------------------------------------
+
+        // --- MOTOR DE BÚSQUEDA SEMÁNTICA ---
         function normalizarTexto(texto) {
             if (!texto) return '';
             return texto.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
         }
 
-        // 2. Calcular la distancia entre palabras (Tolerancia a Typos)
         function distanciaLevenshtein(a, b) {
             const matriz = Array(b.length + 1).fill(null).map(() => Array(a.length + 1).fill(null));
             for (let i = 0; i <= a.length; i++) matriz[0][i] = i;
@@ -173,32 +204,23 @@
                 for (let i = 1; i <= a.length; i++) {
                     const costoSustitucion = a[i - 1] === b[j - 1] ? 0 : 1;
                     matriz[j][i] = Math.min(
-                        matriz[j][i - 1] + 1, // Borrado
-                        matriz[j - 1][i] + 1, // Inserción
-                        matriz[j - 1][i - 1] + costoSustitucion // Sustitución
+                        matriz[j][i - 1] + 1, matriz[j - 1][i] + 1, matriz[j - 1][i - 1] + costoSustitucion
                     );
                 }
             }
             return matriz[b.length][a.length];
         }
 
-        // 3. Cerebro de búsqueda semántica
         function busquedaAvanzada(query, textoProducto) {
             const qNorm = normalizarTexto(query);
             const tNorm = normalizarTexto(textoProducto);
-            
-            // Si hay coincidencia exacta directa, es instantáneo
             if (tNorm.includes(qNorm)) return true;
 
-            // Búsqueda tokenizada: divide lo que escribió el usuario por espacios
             const palabrasQuery = qNorm.split(' ').filter(p => p.trim() !== '');
             const palabrasTexto = tNorm.split(/[\s,.-]+/);
 
-            // Verifica que TODAS las palabras buscadas existan en el producto
             return palabrasQuery.every(pq => {
                 if (tNorm.includes(pq)) return true;
-
-                // Si no existe, permite 1 error en palabras largas (typo)
                 const maxErrores = pq.length > 4 ? 1 : 0;
                 if (maxErrores > 0) {
                     return palabrasTexto.some(pt => {
@@ -273,6 +295,9 @@
                 li.innerHTML = `<a href="#" onclick="changeCategory(event, '${cat}')">${cat}</a>`;
                 nav.appendChild(li);
             });
+
+            // Inicia el carrusel una vez que el menú está dibujado
+            setTimeout(startNavCarousel, 500);
         }
 
         function renderProducts(products, isSearchActive = false) {
@@ -373,7 +398,6 @@
             let filtered = productsArray;
 
             if (query.trim() !== '') {
-                // INTEGRACIÓN DEL NUEVO MOTOR DE BÚSQUEDA
                 filtered = filtered.filter(p => {
                     const textoBuscable = [p.descripcion, p.codigo, p.modelo, p.categoria].filter(Boolean).join(" ");
                     return busquedaAvanzada(query, textoBuscable);
