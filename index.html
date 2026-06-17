@@ -34,18 +34,17 @@
         .cart-box { background-color: transparent; border: 1px solid var(--blanco); color: var(--blanco); padding: 8px 15px; border-radius: 6px; display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 13px; text-decoration: none; cursor: pointer; transition: background 0.3s; }
         .cart-box:hover { background-color: var(--blanco); color: var(--azul-supply); }
 
-        /* --- MENÚ MODERNO (CARRUSEL) --- */
         .main-nav { 
             background-color: var(--blanco); 
             padding: 10px 5%; 
             border-bottom: 1px solid var(--gris-borde);
             overflow-x: auto; 
             white-space: nowrap; 
-            -ms-overflow-style: none; /* IE y Edge */
-            scrollbar-width: none; /* Firefox */
-            scroll-behavior: auto; /* Permite control preciso por JS */
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            scroll-behavior: auto;
         }
-        .main-nav::-webkit-scrollbar { display: none; /* Chrome, Safari y Opera */ }
+        .main-nav::-webkit-scrollbar { display: none; }
         
         .nav-list { display: flex; justify-content: flex-start; list-style: none; gap: 10px; }
         .nav-item a { 
@@ -74,7 +73,6 @@
         .results-count { font-size: 12px; color: #a0aec0; font-weight: bold; background: var(--blanco); padding: 4px 10px; border-radius: 12px; border: 1px solid var(--gris-borde); }
         .category-divider { font-size: 16px; color: var(--azul-oscuro); border-bottom: 2px solid var(--amarillo-supply); padding-bottom: 5px; margin: 30px 0 15px 0; font-weight: 800; text-transform: uppercase; }
 
-        /* --- GRILLA OPTIMIZADA PARA MÓVILES --- */
         .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
         .product-card { background-color: var(--blanco); border-radius: 8px; border: 1px solid var(--gris-borde); padding: 10px; display: flex; flex-direction: column; position: relative; transition: transform 0.2s, box-shadow 0.2s; }
         .product-card:hover { box-shadow: 0 6px 15px rgba(0,0,0,0.08); transform: translateY(-3px); }
@@ -159,7 +157,58 @@
         let currentCategory = 'MAS_VISITADOS';
         let searchTimeout;
 
-        // --- SISTEMA DE CARRUSEL AUTOMÁTICO PARA EL MENÚ ---
+        // --- SISTEMA BITÁCORA DE NAVEGACIÓN ---
+        let startTime = Date.now();
+        let sessionRowId = null; 
+        // Colección única para almacenar las pestañas exploradas por el usuario
+        let categoriasExploradas = new Set(["MÁS VISITADOS"]);
+
+        async function trackVisit() {
+            try {
+                const response = await fetch(GOOGLE_SHEET_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: "visit" })
+                });
+                const resData = await response.json();
+                if (resData.row) {
+                    sessionRowId = resData.row;
+                }
+            } catch (e) { console.log("Error track visit"); }
+        }
+
+        function trackLeave() {
+            if (!sessionRowId) return;
+            const totalSeconds = Math.round((Date.now() - startTime) / 1000);
+            let durationText = "";
+            if (totalSeconds < 60) {
+                durationText = `${totalSeconds} seg`;
+            } else {
+                const minutes = Math.floor(totalSeconds / 60);
+                const seconds = totalSeconds % 60;
+                durationText = `${minutes} min ${seconds} seg`;
+            }
+
+            // Convertimos la colección de categorías en un texto legible por celdas
+            const stringCategorias = Array.from(categoriasExploradas).join(", ");
+
+            fetch(GOOGLE_SHEET_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ 
+                    action: "leave", 
+                    row: sessionRowId, 
+                    duration: durationText,
+                    categories: stringCategorias
+                }),
+                keepalive: true
+            });
+        }
+
+        window.addEventListener('pagehide', trackLeave);
+        window.addEventListener('beforeunload', trackLeave);
+
+        // --- MOVIMIENTO AUTOMÁTICO DEL MENU ---
         let navScrollTimer;
         let isNavHovered = false;
 
@@ -169,26 +218,20 @@
             if (navScrollTimer) clearInterval(navScrollTimer);
             
             navScrollTimer = setInterval(() => {
-                if (isNavHovered) return; // Se pausa si el usuario toca o pasa el mouse
-                
-                // Si llega al final del menú, lo reinicia al principio
+                if (isNavHovered) return; 
                 if (nav.scrollLeft + nav.clientWidth >= nav.scrollWidth - 1) {
                     nav.scrollLeft = 0;
                 } else {
-                    nav.scrollLeft += 1; // Velocidad de desplazamiento
+                    nav.scrollLeft += 1;
                 }
-            }, 30); // 30ms = movimiento continuo y fluido
+            }, 30); 
         }
 
-        // Controladores para pausar el carrusel cuando el usuario interactúa
         const navContainer = document.getElementById('scrollNav');
         navContainer.addEventListener('mouseenter', () => isNavHovered = true);
         navContainer.addEventListener('mouseleave', () => isNavHovered = false);
         navContainer.addEventListener('touchstart', () => isNavHovered = true, {passive: true});
-        navContainer.addEventListener('touchend', () => {
-            setTimeout(() => { isNavHovered = false; }, 1000); // Reanuda 1 segundo después de soltar
-        });
-        // ----------------------------------------------------
+        navContainer.addEventListener('touchend', () => { setTimeout(() => { isNavHovered = false; }, 1000); });
 
         // --- MOTOR DE BÚSQUEDA SEMÁNTICA ---
         function normalizarTexto(texto) {
@@ -203,9 +246,7 @@
             for (let j = 1; j <= b.length; j++) {
                 for (let i = 1; i <= a.length; i++) {
                     const costoSustitucion = a[i - 1] === b[j - 1] ? 0 : 1;
-                    matriz[j][i] = Math.min(
-                        matriz[j][i - 1] + 1, matriz[j - 1][i] + 1, matriz[j - 1][i - 1] + costoSustitucion
-                    );
+                    matriz[j][i] = Math.min( matriz[j][i - 1] + 1, matriz[j - 1][i] + 1, matriz[j - 1][i - 1] + costoSustitucion );
                 }
             }
             return matriz[b.length][a.length];
@@ -231,7 +272,6 @@
                 return false;
             });
         }
-        // ------------------------------------------------
 
         function getIconForProduct(desc, cat) {
             const d = (desc || '').toLowerCase();
@@ -296,7 +336,6 @@
                 nav.appendChild(li);
             });
 
-            // Inicia el carrusel una vez que el menú está dibujado
             setTimeout(startNavCarousel, 500);
         }
 
@@ -408,9 +447,7 @@
                     searchTimeout = setTimeout(() => { trackSearchEvent(filtered); }, 2000);
                 }
             } else {
-                if (currentCategory === 'MAS_VISITADOS') {
-                    filtered = filtered.filter(p => (Number(p.clicks) || 0) > 0);
-                } else {
+                if (currentCategory !== 'MAS_VISITADOS') {
                     filtered = filtered.filter(p => p.categoria && p.categoria.toUpperCase().trim() === currentCategory.toUpperCase().trim());
                 }
             }
@@ -437,6 +474,10 @@
             currentCategory = cat;
             renderMenu();
             
+            // REGISTRO DE MÉTRICA: Añadimos la categoría actual al historial de navegación
+            const nombreMétrica = cat === 'MAS_VISITADOS' ? 'MÁS VISITADOS' : cat;
+            categoriasExploradas.add(nombreMétrica);
+
             if (cat === 'MAS_VISITADOS') document.getElementById('catalogTitle').innerText = '🔥 Productos Más Visitados';
             else document.getElementById('catalogTitle').innerText = cat;
 
@@ -456,15 +497,13 @@
                 productsArray = data.filter(p => {
                     const cat = (p.categoria || '').toUpperCase().trim();
                     const desc = (p.descripcion || '').toUpperCase().trim();
-                    
-                    const catValida = !EXCLUIR_CATEGORIAS.includes(cat);
-                    const descValida = !desc.includes('SIN DESCRIPCION');
-                    
-                    return catValida && descValida;
+                    return !EXCLUIR_CATEGORIAS.includes(cat) && !desc.includes('SIN DESCRIPCION');
                 });
                 
                 renderMenu();
                 filterProducts();
+                trackVisit();
+                
             } catch (error) {
                 wrapper.innerHTML = `<p style="text-align:center; color: #e53e3e; padding: 40px; font-weight: bold;"><i class="fa-solid fa-triangle-exclamation"></i> Error al cargar catálogo. Por favor verifique la URL de Apps Script.</p>`;
             }
@@ -473,6 +512,7 @@
         document.getElementById('logoBtn').addEventListener('click', (e) => {
             e.preventDefault();
             currentCategory = 'MAS_VISITADOS';
+            categoriasExploradas.add("MÁS VISITADOS");
             document.getElementById('searchInput').value = '';
             document.getElementById('catalogTitle').innerText = '🔥 Productos Más Visitados';
             renderMenu();
