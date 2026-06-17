@@ -162,21 +162,35 @@
         let sessionRowId = null; 
         let categoriasExploradas = new Set(["MÁS VISITADOS"]);
 
-        // FUNCIÓN ACTUALIZADA: RECOLECTA IP Y UBICACIÓN
+        // SISTEMA ROBUSTO: DOS RADARES DE UBICACIÓN
         async function trackVisit() {
             let ipUser = "Desconocida";
             let locUser = "Desconocida";
 
-            // Solicitud a la API de geolocalización
             try {
-                const geoRes = await fetch('https://ipapi.co/json/');
+                // Radar 1: GeoJS (Rara vez es bloqueado)
+                const geoRes = await fetch('https://get.geojs.io/v1/ip/geo.json');
                 const geoData = await geoRes.json();
                 if(geoData.ip) {
                     ipUser = geoData.ip;
-                    locUser = `${geoData.city}, ${geoData.region} (${geoData.country_name})`;
+                    const ciudad = geoData.city || 'Desconocida';
+                    const region = geoData.region || 'Desconocida';
+                    const pais = geoData.country || '';
+                    locUser = `${ciudad}, ${region} (${pais})`;
                 }
             } catch(e) { 
-                console.log("No se pudo obtener la IP (bloqueador de anuncios o red)."); 
+                console.log("Radar 1 bloqueado. Intentando Radar 2...");
+                try {
+                    // Radar 2: DB-IP (Respaldo en caso de AdBlock estricto)
+                    const fallbackRes = await fetch('https://api.db-ip.com/v2/free/self');
+                    const fallbackData = await fallbackRes.json();
+                    if(fallbackData.ipAddress) {
+                        ipUser = fallbackData.ipAddress;
+                        locUser = `${fallbackData.city}, ${fallbackData.stateProv} (${fallbackData.countryName})`;
+                    }
+                } catch(err) {
+                    console.log("Rastreo bloqueado por el navegador.");
+                }
             }
 
             // Envía la info completa a Google Sheets
@@ -194,7 +208,7 @@
                 if (resData.row) {
                     sessionRowId = resData.row;
                 }
-            } catch (e) { console.log("Error al registrar visita"); }
+            } catch (e) { console.log("Error al registrar visita en Sheets"); }
         }
 
         function trackLeave() {
@@ -493,7 +507,6 @@
             currentCategory = cat;
             renderMenu();
             
-            // AGREGA CATEGORÍA AL HISTORIAL DE ESTA SESIÓN
             const nombreMetrica = cat === 'MAS_VISITADOS' ? 'MÁS VISITADOS' : cat;
             categoriasExploradas.add(nombreMetrica);
 
@@ -522,7 +535,7 @@
                 renderMenu();
                 filterProducts();
                 
-                // INICIA EL RASTREO CON UBICACIÓN E IP
+                // INICIA EL RASTREO ROBUSTO DE UBICACIÓN
                 trackVisit();
                 
             } catch (error) {
