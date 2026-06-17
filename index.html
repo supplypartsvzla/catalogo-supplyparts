@@ -157,24 +157,44 @@
         let currentCategory = 'MAS_VISITADOS';
         let searchTimeout;
 
-        // --- SISTEMA BITÁCORA DE NAVEGACIÓN ---
+        // --- SISTEMA BITÁCORA DE NAVEGACIÓN Y GEOLOCALIZACIÓN ---
         let startTime = Date.now();
         let sessionRowId = null; 
-        // Colección única para almacenar las pestañas exploradas por el usuario
         let categoriasExploradas = new Set(["MÁS VISITADOS"]);
 
+        // FUNCIÓN ACTUALIZADA: RECOLECTA IP Y UBICACIÓN
         async function trackVisit() {
+            let ipUser = "Desconocida";
+            let locUser = "Desconocida";
+
+            // Solicitud a la API de geolocalización
+            try {
+                const geoRes = await fetch('https://ipapi.co/json/');
+                const geoData = await geoRes.json();
+                if(geoData.ip) {
+                    ipUser = geoData.ip;
+                    locUser = `${geoData.city}, ${geoData.region} (${geoData.country_name})`;
+                }
+            } catch(e) { 
+                console.log("No se pudo obtener la IP (bloqueador de anuncios o red)."); 
+            }
+
+            // Envía la info completa a Google Sheets
             try {
                 const response = await fetch(GOOGLE_SHEET_API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ action: "visit" })
+                    body: JSON.stringify({ 
+                        action: "visit", 
+                        ip: ipUser, 
+                        ubicacion: locUser 
+                    })
                 });
                 const resData = await response.json();
                 if (resData.row) {
                     sessionRowId = resData.row;
                 }
-            } catch (e) { console.log("Error track visit"); }
+            } catch (e) { console.log("Error al registrar visita"); }
         }
 
         function trackLeave() {
@@ -189,7 +209,6 @@
                 durationText = `${minutes} min ${seconds} seg`;
             }
 
-            // Convertimos la colección de categorías en un texto legible por celdas
             const stringCategorias = Array.from(categoriasExploradas).join(", ");
 
             fetch(GOOGLE_SHEET_API_URL, {
@@ -474,9 +493,9 @@
             currentCategory = cat;
             renderMenu();
             
-            // REGISTRO DE MÉTRICA: Añadimos la categoría actual al historial de navegación
-            const nombreMétrica = cat === 'MAS_VISITADOS' ? 'MÁS VISITADOS' : cat;
-            categoriasExploradas.add(nombreMétrica);
+            // AGREGA CATEGORÍA AL HISTORIAL DE ESTA SESIÓN
+            const nombreMetrica = cat === 'MAS_VISITADOS' ? 'MÁS VISITADOS' : cat;
+            categoriasExploradas.add(nombreMetrica);
 
             if (cat === 'MAS_VISITADOS') document.getElementById('catalogTitle').innerText = '🔥 Productos Más Visitados';
             else document.getElementById('catalogTitle').innerText = cat;
@@ -502,6 +521,8 @@
                 
                 renderMenu();
                 filterProducts();
+                
+                // INICIA EL RASTREO CON UBICACIÓN E IP
                 trackVisit();
                 
             } catch (error) {
