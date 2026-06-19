@@ -162,13 +162,11 @@
         let sessionRowId = null; 
         let categoriasExploradas = new Set(["MÁS VISITADOS"]);
 
-        // SISTEMA ROBUSTO: DOS RADARES DE UBICACIÓN
         async function trackVisit() {
             let ipUser = "Desconocida";
             let locUser = "Desconocida";
 
             try {
-                // Radar 1: GeoJS (Rara vez es bloqueado)
                 const geoRes = await fetch('https://get.geojs.io/v1/ip/geo.json');
                 const geoData = await geoRes.json();
                 if(geoData.ip) {
@@ -179,21 +177,16 @@
                     locUser = `${ciudad}, ${region} (${pais})`;
                 }
             } catch(e) { 
-                console.log("Radar 1 bloqueado. Intentando Radar 2...");
                 try {
-                    // Radar 2: DB-IP (Respaldo en caso de AdBlock estricto)
                     const fallbackRes = await fetch('https://api.db-ip.com/v2/free/self');
                     const fallbackData = await fallbackRes.json();
                     if(fallbackData.ipAddress) {
                         ipUser = fallbackData.ipAddress;
                         locUser = `${fallbackData.city}, ${fallbackData.stateProv} (${fallbackData.countryName})`;
                     }
-                } catch(err) {
-                    console.log("Rastreo bloqueado por el navegador.");
-                }
+                } catch(err) { }
             }
 
-            // Envía la info completa a Google Sheets
             try {
                 const response = await fetch(GOOGLE_SHEET_API_URL, {
                     method: 'POST',
@@ -208,9 +201,10 @@
                 if (resData.row) {
                     sessionRowId = resData.row;
                 }
-            } catch (e) { console.log("Error al registrar visita en Sheets"); }
+            } catch (e) { }
         }
 
+        // FUNCIÓN MEJORADA DE SALIDA (ESPECIAL PARA MÓVILES)
         function trackLeave() {
             if (!sessionRowId) return;
             const totalSeconds = Math.round((Date.now() - startTime) / 1000);
@@ -224,22 +218,35 @@
             }
 
             const stringCategorias = Array.from(categoriasExploradas).join(", ");
-
-            fetch(GOOGLE_SHEET_API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ 
-                    action: "leave", 
-                    row: sessionRowId, 
-                    duration: durationText,
-                    categories: stringCategorias
-                }),
-                keepalive: true
+            const payloadData = JSON.stringify({ 
+                action: "leave", 
+                row: sessionRowId, 
+                duration: durationText,
+                categories: stringCategorias
             });
+
+            // Si el navegador soporta Beacon (estándar moderno en móviles), lo usa.
+            if (navigator.sendBeacon) {
+                navigator.sendBeacon(GOOGLE_SHEET_API_URL, payloadData);
+            } else {
+                // Alternativa clásica por si es un navegador antiguo
+                fetch(GOOGLE_SHEET_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: payloadData,
+                    keepalive: true
+                }).catch(()=>{});
+            }
         }
 
+        // SENSORES DE CORTOCIRCUITO PARA MÓVILES (Detectan minimizar, apagar pantalla o cambiar de pestaña)
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                trackLeave();
+            }
+        });
         window.addEventListener('pagehide', trackLeave);
-        window.addEventListener('beforeunload', trackLeave);
+        // window.addEventListener('beforeunload', trackLeave); // Desactivado por causar conflictos en móviles
 
         // --- MOVIMIENTO AUTOMÁTICO DEL MENU ---
         let navScrollTimer;
@@ -535,7 +542,6 @@
                 renderMenu();
                 filterProducts();
                 
-                // INICIA EL RASTREO ROBUSTO DE UBICACIÓN
                 trackVisit();
                 
             } catch (error) {
