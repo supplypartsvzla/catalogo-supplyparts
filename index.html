@@ -249,31 +249,45 @@
         document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') trackLeave(); });
         window.addEventListener('pagehide', trackLeave);
 
-        // --- MOVIMIENTO AUTOMÁTICO DEL MENÚ CARRUSEL ---
+        // --- MOTOR DE CARRUSEL ACTUALIZADO (Evita bugs de zoom/escalado) ---
         let navScrollTimer;
         let isNavHovered = false;
+        let exactScroll = 0;
 
         function startNavCarousel() {
             const nav = document.getElementById('scrollNav');
             if (!nav) return;
             if (navScrollTimer) clearInterval(navScrollTimer);
             
+            exactScroll = nav.scrollLeft;
+            
             navScrollTimer = setInterval(() => {
-                if (isNavHovered) return; 
+                if (isNavHovered) {
+                    exactScroll = nav.scrollLeft; // Se sincroniza si el usuario movió el menú
+                    return; 
+                }
+                
                 if (nav.scrollLeft + nav.clientWidth >= nav.scrollWidth - 1) {
+                    exactScroll = 0;
                     nav.scrollLeft = 0;
                 } else {
-                    nav.scrollLeft += 1;
+                    exactScroll += 1.5; // El uso de decimales evita que navegadores pesados lo detengan
+                    nav.scrollLeft = exactScroll;
                 }
             }, 30); 
         }
 
         const navContainer = document.getElementById('scrollNav');
         if(navContainer) {
-            navContainer.addEventListener('mouseenter', () => isNavHovered = true);
-            navContainer.addEventListener('mouseleave', () => isNavHovered = false);
-            navContainer.addEventListener('touchstart', () => isNavHovered = true, {passive: true});
-            navContainer.addEventListener('touchend', () => { setTimeout(() => { isNavHovered = false; }, 1000); });
+            navContainer.addEventListener('mouseenter', () => { isNavHovered = true; });
+            navContainer.addEventListener('mouseleave', () => { isNavHovered = false; exactScroll = navContainer.scrollLeft; });
+            navContainer.addEventListener('touchstart', () => { isNavHovered = true; }, {passive: true});
+            navContainer.addEventListener('touchend', () => { 
+                setTimeout(() => { isNavHovered = false; exactScroll = navContainer.scrollLeft; }, 1000); 
+            });
+            navContainer.addEventListener('scroll', () => {
+                if (isNavHovered) exactScroll = navContainer.scrollLeft;
+            }, {passive: true});
         }
 
         // --- MOTOR DE BÚSQUEDA SEMÁNTICA ---
@@ -394,7 +408,7 @@
                 nav.appendChild(li);
             });
 
-            // AQUÍ REVIVE EL CARRUSEL
+            // Arranque oficial del carrusel mejorado
             setTimeout(startNavCarousel, 500);
         }
 
