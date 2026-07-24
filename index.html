@@ -34,30 +34,30 @@
         .cart-box { background-color: transparent; border: 1px solid var(--blanco); color: var(--blanco); padding: 8px 15px; border-radius: 6px; display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 13px; text-decoration: none; cursor: pointer; transition: background 0.3s; }
         .cart-box:hover { background-color: var(--blanco); color: var(--azul-supply); }
 
-        .main-nav {
-            background-color: var(--blanco);
-            padding: 10px 5%;
+        .main-nav { 
+            background-color: var(--blanco); 
+            padding: 10px 5%; 
             border-bottom: 1px solid var(--gris-borde);
-            overflow-x: auto;
-            white-space: nowrap;
+            overflow-x: auto; 
+            white-space: nowrap; 
             -ms-overflow-style: none;
             scrollbar-width: none;
             scroll-behavior: auto;
         }
         .main-nav::-webkit-scrollbar { display: none; }
-       
+        
         .nav-list { display: flex; justify-content: flex-start; list-style: none; gap: 10px; }
-        .nav-item a {
-            display: inline-block;
-            padding: 8px 18px;
-            color: var(--gris-texto);
+        .nav-item a { 
+            display: inline-block; 
+            padding: 8px 18px; 
+            color: var(--gris-texto); 
             background-color: var(--gris-fondo);
             border-radius: 20px;
-            text-decoration: none;
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            transition: all 0.3s ease;
+            text-decoration: none; 
+            font-size: 12px; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            transition: all 0.3s ease; 
         }
         .nav-item a:hover { color: var(--azul-supply); background-color: #e2e8f0; }
         .nav-item.active a { background-color: var(--azul-supply); color: var(--blanco); box-shadow: 0 4px 6px rgba(10, 54, 157, 0.2); }
@@ -76,25 +76,23 @@
         .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
         .product-card { background-color: var(--blanco); border-radius: 8px; border: 1px solid var(--gris-borde); padding: 10px; display: flex; flex-direction: column; position: relative; transition: transform 0.2s, box-shadow 0.2s; }
         .product-card:hover { box-shadow: 0 6px 15px rgba(0,0,0,0.08); transform: translateY(-3px); }
-       
+        
         .stock-badge { position: absolute; top: 8px; left: 8px; padding: 3px 8px; font-size: 10px; font-weight: bold; color: var(--blanco); border-radius: 4px; z-index: 5; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-       
+        
         .image-placeholder { width: 100%; height: 110px; background-color: #ffffff; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; margin-bottom: 12px; color: #cbd5e0; font-size: 12px; gap: 6px; border: 1px dashed #e2e8f0; overflow: hidden; position: relative; cursor: pointer; }
         .image-placeholder img { width: 100%; height: 100%; object-fit: contain; padding: 2px; transition: transform 0.3s; }
         .image-placeholder:hover img { transform: scale(1.05); }
 
         .product-info { display: flex; flex-direction: column; flex-grow: 1; }
         .out-of-category-badge { background-color: #ffe8e8; color: #d32f2f; font-size: 10px; font-weight: bold; padding: 4px 6px; border-radius: 4px; margin-bottom: 8px; display: inline-block; border: 1px solid #ffcdd2; }
-       
+        
         .product-code { font-size: 10px; color: #a0aec0; margin-bottom: 4px; font-weight: 700; }
-       
-        /* Ajuste a 3 líneas completas */
         .product-name { font-size: 12px; font-weight: 800; color: var(--gris-oscuro); margin-bottom: 6px; line-height: 1.3; height: 48px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; cursor: pointer; transition: color 0.2s; }
         .product-name:hover { color: var(--azul-supply); }
-       
+        
         .product-meta { font-size: 11px; color: var(--gris-texto); margin-bottom: 10px; }
         .product-price { font-size: 16px; font-weight: 900; color: var(--azul-supply); margin-top: auto; margin-bottom: 12px; }
-       
+        
         .btn-cotizar { background-color: var(--amarillo-supply); color: var(--gris-oscuro); text-align: center; padding: 8px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 6px; transition: background 0.2s; border: none; cursor: pointer; }
         .btn-cotizar:hover { background-color: #e0ab00; }
 
@@ -201,7 +199,7 @@
     </a>
 
     <script>
-        const GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbyCVCU5HRXE8YMfuwOCJCE4ZpqVvhwH5kqeFBH0QhSgW69V5e3a9UKHuJi794VMePBq/exec';
+        const GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbyCVCU5HRXE8YMfuwOCJCE4ZpqVvhwH5kqeFBH0QhSgW69V5e3a9UKHuJi794VMePBq/exec'; 
         const EXCLUIR_CATEGORIAS = ['DUCTOS', 'REFRIGERACION', 'SERVICIO TECNICO', 'NEVERAS', 'AIRE ACONDICIONADO'];
 
         let productsArray = [];
@@ -210,7 +208,7 @@
 
         // --- SISTEMA BITÁCORA DE NAVEGACIÓN Y GEOLOCALIZACIÓN ---
         let startTime = Date.now();
-        let sessionRowId = null;
+        let sessionRowId = null; 
         let categoriasExploradas = new Set(["MÁS VISITADOS"]);
 
         async function trackVisit() {
@@ -240,7 +238,7 @@
             if (!sessionRowId) return;
             const totalSeconds = Math.round((Date.now() - startTime) / 1000);
             const durationText = totalSeconds < 60 ? `${totalSeconds} seg` : `${Math.floor(totalSeconds / 60)} min ${totalSeconds % 60} seg`;
-            const payloadData = JSON.stringify({
+            const payloadData = JSON.stringify({ 
                 action: "leave", row: sessionRowId, duration: durationText, categories: Array.from(categoriasExploradas).join(", ")
             });
 
@@ -250,6 +248,33 @@
 
         document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') trackLeave(); });
         window.addEventListener('pagehide', trackLeave);
+
+        // --- MOVIMIENTO AUTOMÁTICO DEL MENÚ CARRUSEL ---
+        let navScrollTimer;
+        let isNavHovered = false;
+
+        function startNavCarousel() {
+            const nav = document.getElementById('scrollNav');
+            if (!nav) return;
+            if (navScrollTimer) clearInterval(navScrollTimer);
+            
+            navScrollTimer = setInterval(() => {
+                if (isNavHovered) return; 
+                if (nav.scrollLeft + nav.clientWidth >= nav.scrollWidth - 1) {
+                    nav.scrollLeft = 0;
+                } else {
+                    nav.scrollLeft += 1;
+                }
+            }, 30); 
+        }
+
+        const navContainer = document.getElementById('scrollNav');
+        if(navContainer) {
+            navContainer.addEventListener('mouseenter', () => isNavHovered = true);
+            navContainer.addEventListener('mouseleave', () => isNavHovered = false);
+            navContainer.addEventListener('touchstart', () => isNavHovered = true, {passive: true});
+            navContainer.addEventListener('touchend', () => { setTimeout(() => { isNavHovered = false; }, 1000); });
+        }
 
         // --- MOTOR DE BÚSQUEDA SEMÁNTICA ---
         function normalizarTexto(texto) { return (!texto ? '' : texto.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()); }
@@ -293,24 +318,23 @@
 
             const modal = document.getElementById('productModal');
             const bodyContent = document.getElementById('modalBodyContent');
-           
+            
             const stockVal = Number(product.stock) || 0;
-            const stockText = stockVal > 0
-                ? `<span style="color: #28a745; font-weight: bold; background: #e6f4ea; padding: 3px 8px; border-radius: 4px;">${stockVal} en almacén</span>`
+            const stockText = stockVal > 0 
+                ? `<span style="color: #28a745; font-weight: bold; background: #e6f4ea; padding: 3px 8px; border-radius: 4px;">${stockVal} en almacén</span>` 
                 : `<span style="color: #e53e3e; font-weight: bold; background: #fce8e8; padding: 3px 8px; border-radius: 4px;">Agotado</span>`;
-           
+            
             const precioRaw = String(product.precio2 || '0');
             const precioLimpio = precioRaw.replace(',', '.').replace(/[^0-9.-]/g, '');
             const precio = Number(precioLimpio) || 0;
             const precioTexto = precio > 0 ? `$ BCV ${precio.toFixed(2)}` : 'Consultar Precio';
-           
+            
             const iconClass = getIconForProduct(product.descripcion, product.categoria);
-            const imgHTML = (product.url_foto && product.url_foto.trim() !== "")
-                ? `<img src="${product.url_foto}" alt="${product.descripcion}">`
+            const imgHTML = (product.url_foto && product.url_foto.trim() !== "") 
+                ? `<img src="${product.url_foto}" alt="${product.descripcion}">` 
                 : `<i class="fa-solid ${iconClass}" style="font-size: 70px; color: #cbd5e0;"></i>`;
 
-            // Detecta automáticamente si hay una columna "especificaciones" o "detalles" en tu Google Sheets
-            const especificaciones = product.especificaciones || product.detalles || 'No se han registrado detalles técnicos adicionales para este producto.';
+            const especificaciones = product.especificaciones || product.ESPECIFICACIONES || 'No se han registrado detalles técnicos adicionales para este producto.';
 
             bodyContent.innerHTML = `
                 <div class="modal-img-container">${imgHTML}</div>
@@ -318,14 +342,14 @@
                     <div style="font-size: 18px; font-weight: 800; margin-bottom: 15px; color: var(--gris-oscuro); line-height: 1.3;">
                         ${product.descripcion}
                     </div>
-                   
+                    
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; font-size: 13px;">
                         <div><strong>Código:</strong><br>${product.codigo || 'N/A'}</div>
                         <div><strong>Modelo:</strong><br>${product.modelo || 'N/A'}</div>
                         <div><strong>Categoría:</strong><br>${product.categoria || 'N/A'}</div>
                         <div><strong>Unidad de Venta:</strong><br>${product.unidad || 'UND'}</div>
                     </div>
-                   
+                    
                     <div style="margin-bottom: 15px; font-size: 14px;">
                         <strong>Disponibilidad:</strong> ${stockText}
                     </div>
@@ -336,32 +360,32 @@
                     </div>
 
                     <div class="modal-price">${precioTexto}</div>
-                   
+                    
                     <a href="https://wa.me/584142946200?text=${encodeURIComponent(`Hola Supplyparts, deseo cotizar el producto:\n\n📌 Desc: ${product.descripcion}\n🔢 Cód: ${product.codigo}\n💰 Precio ref: ${precioTexto}`)}" target="_blank" class="btn-cotizar" style="width: 100%; font-size: 15px; padding: 12px;" onclick="trackClick('${product.codigo}')">
                         <i class="fa-brands fa-whatsapp" style="font-size: 18px;"></i> Solicitar Pedido
                     </a>
                 </div>
             `;
-           
+            
             modal.classList.add('active');
-            document.body.style.overflow = 'hidden'; // Evita que el fondo haga scroll
+            document.body.style.overflow = 'hidden'; 
         }
 
         function closeModal(e) {
             if (e && e.target.classList.contains('modal-overlay') === false) return;
             document.getElementById('productModal').classList.remove('active');
-            document.body.style.overflow = 'auto'; // Restaura el scroll
+            document.body.style.overflow = 'auto'; 
         }
 
         // --- RENDERIZADO DE PRODUCTOS ---
         function renderMenu() {
             const nav = document.getElementById('dynamicNav');
-            nav.innerHTML = '';
+            nav.innerHTML = ''; 
             const liMasVisitados = document.createElement('li');
             liMasVisitados.className = `nav-item ${currentCategory === 'MAS_VISITADOS' ? 'active' : ''}`;
             liMasVisitados.innerHTML = `<a href="#" onclick="changeCategory(event, 'MAS_VISITADOS')"><i class="fa-solid fa-fire"></i> MÁS VISITADOS</a>`;
             nav.appendChild(liMasVisitados);
-           
+            
             let categorias = [...new Set(productsArray.map(p => (p.categoria || '').toUpperCase().trim()))].filter(c => c !== '').sort();
             categorias.forEach(cat => {
                 const li = document.createElement('li');
@@ -369,6 +393,9 @@
                 li.innerHTML = `<a href="#" onclick="changeCategory(event, '${cat}')">${cat}</a>`;
                 nav.appendChild(li);
             });
+
+            // AQUÍ REVIVE EL CARRUSEL
+            setTimeout(startNavCarousel, 500);
         }
 
         function renderProducts(products, isSearchActive = false) {
@@ -410,20 +437,20 @@
             items.forEach(p => {
                 const card = document.createElement('div');
                 card.className = 'product-card';
-               
+                
                 const stockVal = Number(p.stock) || 0;
-                let stockBadge = stockVal > 0
-                    ? `<span class="stock-badge" style="background-color: #28a745;">Stock: ${stockVal}</span>`
+                let stockBadge = stockVal > 0 
+                    ? `<span class="stock-badge" style="background-color: #28a745;">Stock: ${stockVal}</span>` 
                     : `<span class="stock-badge" style="background-color: #e53e3e;">Agotado</span>`;
-               
+                
                 const precioRaw = String(p.precio2 || '0');
                 const precioLimpio = precioRaw.replace(',', '.').replace(/[^0-9.-]/g, '');
                 const precio = Number(precioLimpio) || 0;
                 const precioTexto = precio > 0 ? `$ BCV ${precio.toFixed(2)}` : 'Consultar';
-               
+                
                 const iconClass = getIconForProduct(p.descripcion, p.categoria);
-                const imgHTML = (p.url_foto && p.url_foto.trim() !== "")
-                    ? `<img src="${p.url_foto}" alt="${p.descripcion}" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\\'fa-solid ${iconClass}\\' style=\\'font-size: 30px;\\'></i><span style=\\'font-size:10px;\\'>Sin imagen</span>';">`
+                const imgHTML = (p.url_foto && p.url_foto.trim() !== "") 
+                    ? `<img src="${p.url_foto}" alt="${p.descripcion}" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\\'fa-solid ${iconClass}\\' style=\\'font-size: 30px;\\'></i><span style=\\'font-size:10px;\\'>Sin imagen</span>';">` 
                     : `<i class="fa-solid ${iconClass}" style="font-size: 30px;"></i><span style="font-size:10px;">En proceso</span>`;
 
                 let outOfCategoryWarning = '';
@@ -432,7 +459,6 @@
                     outOfCategoryWarning = `<div class="out-of-category-badge"><i class="fa-solid fa-circle-exclamation"></i> En: ${p.categoria}</div>`;
                 }
 
-                // Inyectamos el evento onclick en la imagen y en el título para abrir el modal
                 card.innerHTML = `
                     ${stockBadge}
                     <div class="image-placeholder" onclick="openModal('${p.codigo}')" title="Ver detalles del producto">
