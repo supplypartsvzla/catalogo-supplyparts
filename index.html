@@ -87,8 +87,6 @@
         .out-of-category-badge { background-color: #ffe8e8; color: #d32f2f; font-size: 10px; font-weight: bold; padding: 4px 6px; border-radius: 4px; margin-bottom: 8px; display: inline-block; border: 1px solid #ffcdd2; }
        
         .product-code { font-size: 10px; color: #a0aec0; margin-bottom: 4px; font-weight: 700; }
-       
-        /* Ajuste a 3 líneas completas */
         .product-name { font-size: 12px; font-weight: 800; color: var(--gris-oscuro); margin-bottom: 6px; line-height: 1.3; height: 48px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; cursor: pointer; transition: color 0.2s; }
         .product-name:hover { color: var(--azul-supply); }
        
@@ -251,106 +249,36 @@
         document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') trackLeave(); });
         window.addEventListener('pagehide', trackLeave);
 
-        // --- MOTOR DE BÚSQUEDA SEMÁNTICA ---
-        function normalizarTexto(texto) { return (!texto ? '' : texto.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()); }
+        // --- MOVIMIENTO AUTOMÁTICO DEL MENÚ CARRUSEL ---
+        let navScrollTimer;
+        let isNavHovered = false;
 
-        function busquedaAvanzada(query, textoProducto) {
-            const qNorm = normalizarTexto(query);
-            const tNorm = normalizarTexto(textoProducto);
-            if (tNorm.includes(qNorm)) return true;
-            const palabrasQuery = qNorm.split(' ').filter(p => p.trim() !== '');
-            return palabrasQuery.every(pq => tNorm.includes(pq));
+        function startNavCarousel() {
+            const nav = document.getElementById('scrollNav');
+            if (!nav) return;
+            if (navScrollTimer) clearInterval(navScrollTimer);
+           
+            navScrollTimer = setInterval(() => {
+                if (isNavHovered) return;
+                if (nav.scrollLeft + nav.clientWidth >= nav.scrollWidth - 1) {
+                    nav.scrollLeft = 0;
+                } else {
+                    nav.scrollLeft += 1;
+                }
+            }, 30);
         }
 
-        function getIconForProduct(desc, cat) {
-            const d = (desc || '').toLowerCase(); const c = (cat || '').toLowerCase();
-            if (c.includes('alarma')) return 'fa-bell';
-            if (c.includes('bateria')) return 'fa-car-battery';
-            if (c.includes('computacion') || c.includes('redes')) return 'fa-network-wired';
-            if (c.includes('herramientas')) return 'fa-screwdriver-wrench';
-            if (c.includes('porton')) return 'fa-door-open';
-            if (c.includes('incendio')) return 'fa-fire';
-            if (c.includes('tornilleria')) return 'fa-gear';
-            if (c.includes('tv') || c.includes('cable')) return 'fa-tv';
-            if (c.includes('electricidad') || c.includes('cerco')) return 'fa-bolt';
-            if (c.includes('video') || c.includes('camara')) return 'fa-video';
-            if (c.includes('rack')) return 'fa-server';
-            if (c.includes('fibra')) return 'fa-wifi';
-            if (d.includes('cable') || d.includes('bobina')) return 'fa-wave-square';
-            if (d.includes('cerradura') || d.includes('electroiman')) return 'fa-lock';
-            if (d.includes('conector') || d.includes('jack')) return 'fa-plug';
-            return 'fa-box';
-        }
-
-        function trackClick(codigoProducto) {
-            fetch(GOOGLE_SHEET_API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: "click", codigo: codigoProducto }) }).catch(e => {});
-        }
-
-        // --- SISTEMA DE VENTANA EMERGENTE (MODAL) ---
-        function openModal(codigoStr) {
-            const product = productsArray.find(p => String(p.codigo) === String(codigoStr));
-            if (!product) return;
-
-            const modal = document.getElementById('productModal');
-            const bodyContent = document.getElementById('modalBodyContent');
-           
-            const stockVal = Number(product.stock) || 0;
-            const stockText = stockVal > 0
-                ? `<span style="color: #28a745; font-weight: bold; background: #e6f4ea; padding: 3px 8px; border-radius: 4px;">${stockVal} en almacén</span>`
-                : `<span style="color: #e53e3e; font-weight: bold; background: #fce8e8; padding: 3px 8px; border-radius: 4px;">Agotado</span>`;
-           
-            const precioRaw = String(product.precio2 || '0');
-            const precioLimpio = precioRaw.replace(',', '.').replace(/[^0-9.-]/g, '');
-            const precio = Number(precioLimpio) || 0;
-            const precioTexto = precio > 0 ? `$ BCV ${precio.toFixed(2)}` : 'Consultar Precio';
-           
-            const iconClass = getIconForProduct(product.descripcion, product.categoria);
-            const imgHTML = (product.url_foto && product.url_foto.trim() !== "")
-                ? `<img src="${product.url_foto}" alt="${product.descripcion}">`
-                : `<i class="fa-solid ${iconClass}" style="font-size: 70px; color: #cbd5e0;"></i>`;
-
-            // Detecta automáticamente si hay una columna "especificaciones" o "detalles" en tu Google Sheets
-            const especificaciones = product.especificaciones || product.detalles || 'No se han registrado detalles técnicos adicionales para este producto.';
-
-            bodyContent.innerHTML = `
-                <div class="modal-img-container">${imgHTML}</div>
-                <div class="modal-details">
-                    <div style="font-size: 18px; font-weight: 800; margin-bottom: 15px; color: var(--gris-oscuro); line-height: 1.3;">
-                        ${product.descripcion}
-                    </div>
-                   
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; font-size: 13px;">
-                        <div><strong>Código:</strong><br>${product.codigo || 'N/A'}</div>
-                        <div><strong>Modelo:</strong><br>${product.modelo || 'N/A'}</div>
-                        <div><strong>Categoría:</strong><br>${product.categoria || 'N/A'}</div>
-                        <div><strong>Unidad de Venta:</strong><br>${product.unidad || 'UND'}</div>
-                    </div>
-                   
-                    <div style="margin-bottom: 15px; font-size: 14px;">
-                        <strong>Disponibilidad:</strong> ${stockText}
-                    </div>
-
-                    <div style="background: var(--gris-fondo); padding: 12px; border-radius: 6px; border: 1px solid var(--gris-borde); margin-bottom: 15px;">
-                        <strong style="font-size: 13px; color: var(--azul-oscuro);">Especificaciones / Notas:</strong>
-                        <p style="margin-top: 5px; font-size: 13px; white-space: pre-wrap;">${especificaciones}</p>
-                    </div>
-
-                    <div class="modal-price">${precioTexto}</div>
-                   
-                    <a href="https://wa.me/584142946200?text=${encodeURIComponent(`Hola Supplyparts, deseo cotizar el producto:\n\n📌 Desc: ${product.descripcion}\n🔢 Cód: ${product.codigo}\n💰 Precio ref: ${precioTexto}`)}" target="_blank" class="btn-cotizar" style="width: 100%; font-size: 15px; padding: 12px;" onclick="trackClick('${product.codigo}')">
-                        <i class="fa-brands fa-whatsapp" style="font-size: 18px;"></i> Solicitar Pedido
-                    </a>
-                </div>
-            `;
-           
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden'; // Evita que el fondo haga scroll
-        }
-
+        const navContainer = document.getElementById('scrollNav');
+        if(navContainer) {
+            navContainer.addEventListener('mouseenter', () => isNavHovered = true);
+            navContainer.addEventListener('mouseleave', () => isNavHovered = false);
+            navContainer.addEventListener('touchstart', () => isNavHovered = true, {passive: true});
+            navContainer.addEventListener('touchend', () => { setTimeout(() => { isNavHovered = false; }, 1000); });
+            const especificaciones = product.especificaciones || product.ESPECIFICACIONES || 'No se han registrado detalles técnicos adicionales para este producto.';
         function closeModal(e) {
             if (e && e.target.classList.contains('modal-overlay') === false) return;
             document.getElementById('productModal').classList.remove('active');
-            document.body.style.overflow = 'auto'; // Restaura el scroll
+            document.body.style.overflow = 'auto';
         }
 
         // --- RENDERIZADO DE PRODUCTOS ---
@@ -369,6 +297,10 @@
                 li.innerHTML = `<a href="#" onclick="changeCategory(event, '${cat}')">${cat}</a>`;
                 nav.appendChild(li);
             });
+
+            // AQUÍ REVIVE EL CARRUSEL
+            setTimeout(startNavCarousel, 500);
+
         }
 
         function renderProducts(products, isSearchActive = false) {
@@ -432,7 +364,6 @@
                     outOfCategoryWarning = `<div class="out-of-category-badge"><i class="fa-solid fa-circle-exclamation"></i> En: ${p.categoria}</div>`;
                 }
 
-                // Inyectamos el evento onclick en la imagen y en el título para abrir el modal
                 card.innerHTML = `
                     ${stockBadge}
                     <div class="image-placeholder" onclick="openModal('${p.codigo}')" title="Ver detalles del producto">
