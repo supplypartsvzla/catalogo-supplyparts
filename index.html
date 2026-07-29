@@ -134,6 +134,16 @@
         .modal-details strong { color: var(--gris-oscuro); }
         .modal-price { font-size: 24px; font-weight: 900; color: var(--azul-supply); margin: 15px 0; text-align: center; }
 
+        /* Botón Compartir */
+        .btn-compartir {
+            background-color: var(--gris-fondo); color: var(--azul-oscuro);
+            border: 1px solid var(--gris-borde); border-radius: 6px; padding: 12px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 18px; transition: all 0.2s; width: 45px;
+        }
+        .btn-compartir:hover { background-color: #e2e8f0; color: var(--azul-supply); }
+        .actions-group { display: flex; gap: 10px; margin-top: 10px; }
+
         @media (max-width: 768px) {
             .top-header { padding: 12px; justify-content: center; }
             .search-container { width: 100%; order: 3; margin-top: 10px; }
@@ -249,7 +259,7 @@
         document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') trackLeave(); });
         window.addEventListener('pagehide', trackLeave);
 
-        // --- MOTOR DE CARRUSEL ACTUALIZADO (Evita bugs de zoom/escalado) ---
+        // --- MOTOR DE CARRUSEL ACTUALIZADO ---
         let navScrollTimer;
         let isNavHovered = false;
         let exactScroll = 0;
@@ -263,15 +273,14 @@
             
             navScrollTimer = setInterval(() => {
                 if (isNavHovered) {
-                    exactScroll = nav.scrollLeft; // Se sincroniza si el usuario movió el menú
+                    exactScroll = nav.scrollLeft; 
                     return; 
                 }
-                
                 if (nav.scrollLeft + nav.clientWidth >= nav.scrollWidth - 1) {
                     exactScroll = 0;
                     nav.scrollLeft = 0;
                 } else {
-                    exactScroll += 1.5; // El uso de decimales evita que navegadores pesados lo detengan
+                    exactScroll += 1.5; 
                     nav.scrollLeft = exactScroll;
                 }
             }, 30); 
@@ -325,10 +334,32 @@
             fetch(GOOGLE_SHEET_API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: "click", codigo: codigoProducto }) }).catch(e => {});
         }
 
+        // --- SISTEMA COMPARTIR PRODUCTO (API NATIVA) ---
+        function shareProduct(codigo, descripcion) {
+            const shareUrl = window.location.origin + window.location.pathname + '?p=' + codigo;
+            
+            const shareData = {
+                title: 'Supplyparts - Ficha Técnica',
+                text: `Mira este producto en Supplyparts:\n${descripcion}\n`,
+                url: shareUrl
+            };
+
+            if (navigator.share) {
+                navigator.share(shareData).catch(err => console.log('Compartir cancelado'));
+            } else {
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                    alert('¡Enlace copiado al portapapeles! Ya puedes pegarlo y enviarlo.');
+                });
+            }
+        }
+
         // --- SISTEMA DE VENTANA EMERGENTE (MODAL) ---
         function openModal(codigoStr) {
             const product = productsArray.find(p => String(p.codigo) === String(codigoStr));
             if (!product) return;
+
+            const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?p=' + product.codigo;
+            window.history.pushState({path: newUrl}, '', newUrl);
 
             const modal = document.getElementById('productModal');
             const bodyContent = document.getElementById('modalBodyContent');
@@ -375,9 +406,14 @@
 
                     <div class="modal-price">${precioTexto}</div>
                     
-                    <a href="https://wa.me/584142946200?text=${encodeURIComponent(`Hola Supplyparts, deseo cotizar el producto:\n\n📌 Desc: ${product.descripcion}\n🔢 Cód: ${product.codigo}\n💰 Precio ref: ${precioTexto}`)}" target="_blank" class="btn-cotizar" style="width: 100%; font-size: 15px; padding: 12px;" onclick="trackClick('${product.codigo}')">
-                        <i class="fa-brands fa-whatsapp" style="font-size: 18px;"></i> Solicitar Pedido
-                    </a>
+                    <div class="actions-group">
+                        <a href="https://wa.me/584142946200?text=${encodeURIComponent(`Hola Supplyparts, deseo cotizar el producto:\n\n📌 Desc: ${product.descripcion}\n🔢 Cód: ${product.codigo}\n💰 Precio ref: ${precioTexto}`)}" target="_blank" class="btn-cotizar" style="flex: 1; font-size: 15px; padding: 12px;" onclick="trackClick('${product.codigo}')">
+                            <i class="fa-brands fa-whatsapp" style="font-size: 18px;"></i> Solicitar Pedido
+                        </a>
+                        <button class="btn-compartir" onclick="shareProduct('${product.codigo}', '${product.descripcion.replace(/'/g, "\\'")}')" title="Compartir este producto">
+                            <i class="fa-solid fa-share-nodes"></i>
+                        </button>
+                    </div>
                 </div>
             `;
             
@@ -389,12 +425,16 @@
             if (e && e.target.classList.contains('modal-overlay') === false) return;
             document.getElementById('productModal').classList.remove('active');
             document.body.style.overflow = 'auto'; 
+            
+            const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+            window.history.pushState({path: cleanUrl}, '', cleanUrl);
         }
 
-        // --- RENDERIZADO DE PRODUCTOS ---
+        // --- RENDERIZADO DE PRODUCTOS Y MENÚ ---
         function renderMenu() {
             const nav = document.getElementById('dynamicNav');
             nav.innerHTML = ''; 
+            
             const liMasVisitados = document.createElement('li');
             liMasVisitados.className = `nav-item ${currentCategory === 'MAS_VISITADOS' ? 'active' : ''}`;
             liMasVisitados.innerHTML = `<a href="#" onclick="changeCategory(event, 'MAS_VISITADOS')"><i class="fa-solid fa-fire"></i> MÁS VISITADOS</a>`;
@@ -408,7 +448,6 @@
                 nav.appendChild(li);
             });
 
-            // Arranque oficial del carrusel mejorado
             setTimeout(startNavCarousel, 500);
         }
 
@@ -517,17 +556,29 @@
                 return (a.descripcion || '').toLowerCase().localeCompare((b.descripcion || '').toLowerCase());
             });
 
-            if (currentCategory === 'MAS_VISITADOS' && query.trim() === '') filtered = filtered.slice(0, 20);
+            if (currentCategory === 'MAS_VISITADOS' && query.trim() === '') {
+                filtered = filtered.slice(0, 20);
+            }
+            
             renderProducts(filtered, query.trim() !== '');
         }
 
         function changeCategory(event, cat) {
             event.preventDefault();
             currentCategory = cat;
+            
             categoriasExploradas.add(cat === 'MAS_VISITADOS' ? 'MÁS VISITADOS' : cat);
-            document.getElementById('catalogTitle').innerText = cat === 'MAS_VISITADOS' ? '🔥 Productos Más Visitados' : cat;
+            
+            if (cat === 'MAS_VISITADOS') {
+                document.getElementById('catalogTitle').innerText = '🔥 Productos Más Visitados';
+            } else {
+                document.getElementById('catalogTitle').innerText = cat;
+            }
+            
             document.getElementById('searchInput').value = '';
-            renderMenu(); filterProducts(); window.scrollTo({ top: 0, behavior: 'smooth' });
+            renderMenu(); 
+            filterProducts(); 
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         async function initCatalog() {
@@ -537,16 +588,30 @@
                 const response = await fetch(GOOGLE_SHEET_API_URL, { method: 'GET', cache: 'no-store' });
                 const data = await response.json();
                 productsArray = data.filter(p => !EXCLUIR_CATEGORIAS.includes((p.categoria || '').toUpperCase().trim()) && !(p.descripcion || '').toUpperCase().trim().includes('SIN DESCRIPCION'));
-                renderMenu(); filterProducts(); trackVisit();
+                
+                renderMenu(); 
+                filterProducts(); 
+                trackVisit();
+
+                const urlParams = new URLSearchParams(window.location.search);
+                const productId = urlParams.get('p');
+                if (productId) {
+                    setTimeout(() => { openModal(productId); }, 400);
+                }
+
             } catch (error) {
                 wrapper.innerHTML = `<p style="text-align:center; color: #e53e3e; padding: 40px;"><i class="fa-solid fa-triangle-exclamation"></i> Error al cargar catálogo.</p>`;
             }
         }
 
         document.getElementById('logoBtn').addEventListener('click', (e) => {
-            e.preventDefault(); currentCategory = 'MAS_VISITADOS'; document.getElementById('searchInput').value = '';
+            e.preventDefault(); 
+            currentCategory = 'MAS_VISITADOS'; 
+            document.getElementById('searchInput').value = '';
             document.getElementById('catalogTitle').innerText = '🔥 Productos Más Visitados';
-            renderMenu(); filterProducts(); window.scrollTo({ top: 0, behavior: 'smooth' });
+            renderMenu(); 
+            filterProducts(); 
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
         window.onload = initCatalog;
