@@ -210,7 +210,9 @@
 
     <script>
         const GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbyCVCU5HRXE8YMfuwOCJCE4ZpqVvhwH5kqeFBH0QhSgW69V5e3a9UKHuJi794VMePBq/exec'; 
-        const EXCLUIR_CATEGORIAS = ['DUCTOS', 'REFRIGERACION', 'SERVICIO TECNICO', 'NEVERAS', 'AIRE ACONDICIONADO'];
+        
+        // Se agregaron variantes de 'SERVICIOS' a la lista de exclusión
+        const EXCLUIR_CATEGORIAS = ['DUCTOS', 'REFRIGERACION', 'SERVICIO TECNICO', 'SERVICIOS', 'SERVICIO', 'NEVERAS', 'AIRE ACONDICIONADO'];
 
         let productsArray = [];
         let currentCategory = 'MAS_VISITADOS';
@@ -587,7 +589,13 @@
             try {
                 const response = await fetch(GOOGLE_SHEET_API_URL, { method: 'GET', cache: 'no-store' });
                 const data = await response.json();
-                productsArray = data.filter(p => !EXCLUIR_CATEGORIAS.includes((p.categoria || '').toUpperCase().trim()) && !(p.descripcion || '').toUpperCase().trim().includes('SIN DESCRIPCION'));
+                
+                // Se agregó una condición extra para asegurar que ninguna categoría que contenga "SERVICIO" se muestre.
+                productsArray = data.filter(p => 
+                    !EXCLUIR_CATEGORIAS.includes((p.categoria || '').toUpperCase().trim()) && 
+                    !(p.categoria || '').toUpperCase().includes('SERVICIO') &&
+                    !(p.descripcion || '').toUpperCase().trim().includes('SIN DESCRIPCION')
+                );
                 
                 renderMenu(); 
                 filterProducts(); 
