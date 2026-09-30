@@ -74,21 +74,21 @@
         .category-divider { font-size: 16px; color: var(--azul-oscuro); border-bottom: 2px solid var(--amarillo-supply); padding-bottom: 5px; margin: 30px 0 15px 0; font-weight: 800; text-transform: uppercase; }
 
         .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
-        .product-card { background-color: var(--blanco); border-radius: 8px; border: 1px solid var(--gris-borde); padding: 10px; display: flex; flex-direction: column; position: relative; transition: transform 0.2s, box-shadow 0.2s; }
+        .product-card { background-color: var(--blanco); border-radius: 8px; border: 1px solid var(--gris-borde); padding: 10px; display: flex; flex-direction: column; position: relative; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; }
         .product-card:hover { box-shadow: 0 6px 15px rgba(0,0,0,0.08); transform: translateY(-3px); }
         
         .stock-badge { position: absolute; top: 8px; left: 8px; padding: 3px 8px; font-size: 10px; font-weight: bold; color: var(--blanco); border-radius: 4px; z-index: 5; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         
-        .image-placeholder { width: 100%; height: 110px; background-color: #ffffff; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; margin-bottom: 12px; color: #cbd5e0; font-size: 12px; gap: 6px; border: 1px dashed #e2e8f0; overflow: hidden; position: relative; cursor: pointer; }
+        .image-placeholder { width: 100%; height: 110px; background-color: #ffffff; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; margin-bottom: 12px; color: #cbd5e0; font-size: 12px; gap: 6px; border: 1px dashed #e2e8f0; overflow: hidden; position: relative; }
         .image-placeholder img { width: 100%; height: 100%; object-fit: contain; padding: 2px; transition: transform 0.3s; }
-        .image-placeholder:hover img { transform: scale(1.05); }
+        .product-card:hover .image-placeholder img { transform: scale(1.05); }
 
         .product-info { display: flex; flex-direction: column; flex-grow: 1; }
         .out-of-category-badge { background-color: #ffe8e8; color: #d32f2f; font-size: 10px; font-weight: bold; padding: 4px 6px; border-radius: 4px; margin-bottom: 8px; display: inline-block; border: 1px solid #ffcdd2; }
         
         .product-code { font-size: 10px; color: #a0aec0; margin-bottom: 4px; font-weight: 700; }
-        .product-name { font-size: 12px; font-weight: 800; color: var(--gris-oscuro); margin-bottom: 6px; line-height: 1.3; height: 48px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; cursor: pointer; transition: color 0.2s; }
-        .product-name:hover { color: var(--azul-supply); }
+        .product-name { font-size: 12px; font-weight: 800; color: var(--gris-oscuro); margin-bottom: 6px; line-height: 1.3; height: 48px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; transition: color 0.2s; }
+        .product-card:hover .product-name { color: var(--azul-supply); }
         
         .product-meta { font-size: 11px; color: var(--gris-texto); margin-bottom: 10px; }
         .product-price { font-size: 16px; font-weight: 900; color: var(--azul-supply); margin-top: auto; margin-bottom: 12px; }
@@ -99,7 +99,7 @@
         .whatsapp-float { position: fixed; bottom: 20px; right: 20px; background-color: #25d366; color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 28px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 1000; text-decoration: none; transition: transform 0.2s; }
         .whatsapp-float:hover { transform: scale(1.08); }
 
-        /* ====== ESTILOS DE LA VENTANA EMERGENTE (MODAL) ====== */
+        /* ====== MODAL ====== */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.7); backdrop-filter: blur(3px);
@@ -134,7 +134,6 @@
         .modal-details strong { color: var(--gris-oscuro); }
         .modal-price { font-size: 24px; font-weight: 900; color: var(--azul-supply); margin: 15px 0; text-align: center; }
 
-        /* Botón Compartir */
         .btn-compartir {
             background-color: var(--gris-fondo); color: var(--azul-oscuro);
             border: 1px solid var(--gris-borde); border-radius: 6px; padding: 12px;
@@ -199,8 +198,7 @@
                 <div class="modal-title">Ficha Técnica</div>
                 <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div class="modal-body" id="modalBodyContent">
-                </div>
+            <div class="modal-body" id="modalBodyContent"></div>
         </div>
     </div>
 
@@ -208,421 +206,455 @@
         <i class="fa-brands fa-whatsapp"></i>
     </a>
 
-    <script>
-        const GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbyCVCU5HRXE8YMfuwOCJCE4ZpqVvhwH5kqeFBH0QhSgW69V5e3a9UKHuJi794VMePBq/exec'; 
-        
-        // Se agregaron variantes de 'SERVICIOS' a la lista de exclusión
-        const EXCLUIR_CATEGORIAS = ['DUCTOS', 'REFRIGERACION', 'SERVICIO TECNICO', 'SERVICIOS', 'SERVICIO', 'NEVERAS', 'AIRE ACONDICIONADO'];
+<script>
+    const GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbyCVCU5HRXE8YMfuwOCJCE4ZpqVvhwH5kqeFBH0QhSgW69V5e3a9UKHuJi794VMePBq/exec';
+    const EXCLUIR_CATEGORIAS = ['DUCTOS','REFRIGERACION','SERVICIO TECNICO','SERVICIOS','SERVICIO','NEVERAS','AIRE ACONDICIONADO'];
+    const CLICKS_KEY = 'sp_clicks_v1';
 
-        let productsArray = [];
-        let currentCategory = 'MAS_VISITADOS';
-        let searchTimeout;
+    let productsArray = [];
+    let currentCategory = 'MAS_VISITADOS';
+    let searchTimeout;
 
-        // --- SISTEMA BITÁCORA DE NAVEGACIÓN Y GEOLOCALIZACIÓN ---
-        let startTime = Date.now();
-        let sessionRowId = null; 
-        let categoriasExploradas = new Set(["MÁS VISITADOS"]);
+    // ============================================================
+    //  SISTEMA DE CLICS: localStorage + backend (sin duplicar)
+    // ============================================================
+    function getLocalClicks() {
+        try {
+            const raw = localStorage.getItem(CLICKS_KEY);
+            const data = raw ? JSON.parse(raw) : {};
+            return (data && typeof data === 'object' && !Array.isArray(data)) ? data : {};
+        } catch (e) { return {}; }
+    }
 
-        async function trackVisit() {
-            let ipUser = "Desconocida";
-            let locUser = "Desconocida";
-            try {
-                const geoRes = await fetch('https://get.geojs.io/v1/ip/geo.json');
-                const geoData = await geoRes.json();
-                if(geoData.ip) {
-                    ipUser = geoData.ip;
-                    locUser = `${geoData.city || 'Desconocida'}, ${geoData.region || 'Desconocida'} (${geoData.country || ''})`;
-                }
-            } catch(e) { }
+    function getServerClicks(p) {
+        return Number(
+            p._serverClicks ?? p.clicks ?? p.CLICKS ??
+            p.clics ?? p.Clics ?? p.visitas ?? p.VISITAS ?? 0
+        ) || 0;
+    }
 
-            try {
-                const response = await fetch(GOOGLE_SHEET_API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ action: "visit", ip: ipUser, ubicacion: locUser })
-                });
-                const resData = await response.json();
-                if (resData.row) sessionRowId = resData.row;
-            } catch (e) { }
-        }
+    function getClicks(p) {
+        return getServerClicks(p) + (Number(getLocalClicks()[String(p.codigo || '')]) || 0);
+    }
 
-        function trackLeave() {
-            if (!sessionRowId) return;
-            const totalSeconds = Math.round((Date.now() - startTime) / 1000);
-            const durationText = totalSeconds < 60 ? `${totalSeconds} seg` : `${Math.floor(totalSeconds / 60)} min ${totalSeconds % 60} seg`;
-            const payloadData = JSON.stringify({ 
-                action: "leave", row: sessionRowId, duration: durationText, categories: Array.from(categoriasExploradas).join(", ")
-            });
+    function registrarClick(codigo) {
+        if (!codigo) return;
+        const id = String(codigo);
+        const data = getLocalClicks();
+        data[id] = (Number(data[id]) || 0) + 1;
+        try { localStorage.setItem(CLICKS_KEY, JSON.stringify(data)); } catch (e) {}
 
-            if (navigator.sendBeacon) navigator.sendBeacon(GOOGLE_SHEET_API_URL, payloadData);
-            else fetch(GOOGLE_SHEET_API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: payloadData, keepalive: true }).catch(()=>{});
-        }
+        fetch(GOOGLE_SHEET_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: "click", codigo: id })
+        }).catch(() => {});
+    }
 
-        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') trackLeave(); });
-        window.addEventListener('pagehide', trackLeave);
+    // --- BITÁCORA / GEO ---
+    let startTime = Date.now();
+    let sessionRowId = null;
+    let categoriasExploradas = new Set(["MÁS VISITADOS"]);
 
-        // --- MOTOR DE CARRUSEL ACTUALIZADO ---
-        let navScrollTimer;
-        let isNavHovered = false;
-        let exactScroll = 0;
-
-        function startNavCarousel() {
-            const nav = document.getElementById('scrollNav');
-            if (!nav) return;
-            if (navScrollTimer) clearInterval(navScrollTimer);
-            
-            exactScroll = nav.scrollLeft;
-            
-            navScrollTimer = setInterval(() => {
-                if (isNavHovered) {
-                    exactScroll = nav.scrollLeft; 
-                    return; 
-                }
-                if (nav.scrollLeft + nav.clientWidth >= nav.scrollWidth - 1) {
-                    exactScroll = 0;
-                    nav.scrollLeft = 0;
-                } else {
-                    exactScroll += 1.5; 
-                    nav.scrollLeft = exactScroll;
-                }
-            }, 30); 
-        }
-
-        const navContainer = document.getElementById('scrollNav');
-        if(navContainer) {
-            navContainer.addEventListener('mouseenter', () => { isNavHovered = true; });
-            navContainer.addEventListener('mouseleave', () => { isNavHovered = false; exactScroll = navContainer.scrollLeft; });
-            navContainer.addEventListener('touchstart', () => { isNavHovered = true; }, {passive: true});
-            navContainer.addEventListener('touchend', () => { 
-                setTimeout(() => { isNavHovered = false; exactScroll = navContainer.scrollLeft; }, 1000); 
-            });
-            navContainer.addEventListener('scroll', () => {
-                if (isNavHovered) exactScroll = navContainer.scrollLeft;
-            }, {passive: true});
-        }
-
-        // --- MOTOR DE BÚSQUEDA SEMÁNTICA ---
-        function normalizarTexto(texto) { return (!texto ? '' : texto.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()); }
-
-        function busquedaAvanzada(query, textoProducto) {
-            const qNorm = normalizarTexto(query);
-            const tNorm = normalizarTexto(textoProducto);
-            if (tNorm.includes(qNorm)) return true;
-            const palabrasQuery = qNorm.split(' ').filter(p => p.trim() !== '');
-            return palabrasQuery.every(pq => tNorm.includes(pq));
-        }
-
-        function getIconForProduct(desc, cat) {
-            const d = (desc || '').toLowerCase(); const c = (cat || '').toLowerCase();
-            if (c.includes('alarma')) return 'fa-bell';
-            if (c.includes('bateria')) return 'fa-car-battery';
-            if (c.includes('computacion') || c.includes('redes')) return 'fa-network-wired';
-            if (c.includes('herramientas')) return 'fa-screwdriver-wrench';
-            if (c.includes('porton')) return 'fa-door-open';
-            if (c.includes('incendio')) return 'fa-fire';
-            if (c.includes('tornilleria')) return 'fa-gear';
-            if (c.includes('tv') || c.includes('cable')) return 'fa-tv';
-            if (c.includes('electricidad') || c.includes('cerco')) return 'fa-bolt';
-            if (c.includes('video') || c.includes('camara')) return 'fa-video';
-            if (c.includes('rack')) return 'fa-server';
-            if (c.includes('fibra')) return 'fa-wifi';
-            if (d.includes('cable') || d.includes('bobina')) return 'fa-wave-square';
-            if (d.includes('cerradura') || d.includes('electroiman')) return 'fa-lock';
-            if (d.includes('conector') || d.includes('jack')) return 'fa-plug';
-            return 'fa-box';
-        }
-
-        function trackClick(codigoProducto) {
-            fetch(GOOGLE_SHEET_API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: "click", codigo: codigoProducto }) }).catch(e => {});
-        }
-
-        // --- SISTEMA COMPARTIR PRODUCTO (API NATIVA) ---
-        function shareProduct(codigo, descripcion) {
-            const shareUrl = window.location.origin + window.location.pathname + '?p=' + codigo;
-            
-            const shareData = {
-                title: 'Supplyparts - Ficha Técnica',
-                text: `Mira este producto en Supplyparts:\n${descripcion}\n`,
-                url: shareUrl
-            };
-
-            if (navigator.share) {
-                navigator.share(shareData).catch(err => console.log('Compartir cancelado'));
-            } else {
-                navigator.clipboard.writeText(shareUrl).then(() => {
-                    alert('¡Enlace copiado al portapapeles! Ya puedes pegarlo y enviarlo.');
-                });
+    async function trackVisit() {
+        let ipUser = "Desconocida", locUser = "Desconocida";
+        try {
+            const geoRes = await fetch('https://get.geojs.io/v1/ip/geo.json');
+            const geoData = await geoRes.json();
+            if (geoData.ip) {
+                ipUser = geoData.ip;
+                locUser = `${geoData.city || 'Desconocida'}, ${geoData.region || 'Desconocida'} (${geoData.country || ''})`;
             }
-        }
+        } catch (e) {}
+        try {
+            const response = await fetch(GOOGLE_SHEET_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action: "visit", ip: ipUser, ubicacion: locUser })
+            });
+            const resData = await response.json();
+            if (resData.row) sessionRowId = resData.row;
+        } catch (e) {}
+    }
 
-        // --- SISTEMA DE VENTANA EMERGENTE (MODAL) ---
-        function openModal(codigoStr) {
-            const product = productsArray.find(p => String(p.codigo) === String(codigoStr));
-            if (!product) return;
+    function trackLeave() {
+        if (!sessionRowId) return;
+        const totalSeconds = Math.round((Date.now() - startTime) / 1000);
+        const durationText = totalSeconds < 60 ? `${totalSeconds} seg` : `${Math.floor(totalSeconds / 60)} min ${totalSeconds % 60} seg`;
+        const payloadData = JSON.stringify({
+            action: "leave", row: sessionRowId, duration: durationText,
+            categories: Array.from(categoriasExploradas).join(", ")
+        });
+        if (navigator.sendBeacon) navigator.sendBeacon(GOOGLE_SHEET_API_URL, payloadData);
+        else fetch(GOOGLE_SHEET_API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: payloadData, keepalive: true }).catch(()=>{});
+    }
 
-            const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?p=' + product.codigo;
-            window.history.pushState({path: newUrl}, '', newUrl);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') trackLeave(); });
+    window.addEventListener('pagehide', trackLeave);
 
-            const modal = document.getElementById('productModal');
-            const bodyContent = document.getElementById('modalBodyContent');
-            
-            const stockVal = Number(product.stock) || 0;
-            const stockText = stockVal > 0 
-                ? `<span style="color: #28a745; font-weight: bold; background: #e6f4ea; padding: 3px 8px; border-radius: 4px;">${stockVal} en almacén</span>` 
-                : `<span style="color: #e53e3e; font-weight: bold; background: #fce8e8; padding: 3px 8px; border-radius: 4px;">Agotado</span>`;
-            
-            const precioRaw = String(product.precio2 || '0');
-            const precioLimpio = precioRaw.replace(',', '.').replace(/[^0-9.-]/g, '');
-            const precio = Number(precioLimpio) || 0;
-            const precioTexto = precio > 0 ? `$ BCV ${precio.toFixed(2)}` : 'Consultar Precio';
-            
-            const iconClass = getIconForProduct(product.descripcion, product.categoria);
-            const imgHTML = (product.url_foto && product.url_foto.trim() !== "") 
-                ? `<img src="${product.url_foto}" alt="${product.descripcion}">` 
-                : `<i class="fa-solid ${iconClass}" style="font-size: 70px; color: #cbd5e0;"></i>`;
+    // --- CARRUSEL ---
+    let navScrollTimer, isNavHovered = false, exactScroll = 0;
+    function startNavCarousel() {
+        const nav = document.getElementById('scrollNav');
+        if (!nav) return;
+        if (navScrollTimer) clearInterval(navScrollTimer);
+        exactScroll = nav.scrollLeft;
+        navScrollTimer = setInterval(() => {
+            if (isNavHovered) { exactScroll = nav.scrollLeft; return; }
+            if (nav.scrollLeft + nav.clientWidth >= nav.scrollWidth - 1) { exactScroll = 0; nav.scrollLeft = 0; }
+            else { exactScroll += 1.5; nav.scrollLeft = exactScroll; }
+        }, 30);
+    }
 
-            const especificaciones = product.especificaciones || product.ESPECIFICACIONES || 'No se han registrado detalles técnicos adicionales para este producto.';
+    const navContainer = document.getElementById('scrollNav');
+    if (navContainer) {
+        navContainer.addEventListener('mouseenter', () => { isNavHovered = true; });
+        navContainer.addEventListener('mouseleave', () => { isNavHovered = false; exactScroll = navContainer.scrollLeft; });
+        navContainer.addEventListener('touchstart', () => { isNavHovered = true; }, {passive: true});
+        navContainer.addEventListener('touchend', () => {
+            setTimeout(() => { isNavHovered = false; exactScroll = navContainer.scrollLeft; }, 1000);
+        });
+        navContainer.addEventListener('scroll', () => {
+            if (isNavHovered) exactScroll = navContainer.scrollLeft;
+        }, {passive: true});
+    }
 
-            bodyContent.innerHTML = `
-                <div class="modal-img-container">${imgHTML}</div>
-                <div class="modal-details">
-                    <div style="font-size: 18px; font-weight: 800; margin-bottom: 15px; color: var(--gris-oscuro); line-height: 1.3;">
-                        ${product.descripcion}
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; font-size: 13px;">
-                        <div><strong>Código:</strong><br>${product.codigo || 'N/A'}</div>
-                        <div><strong>Modelo:</strong><br>${product.modelo || 'N/A'}</div>
-                        <div><strong>Categoría:</strong><br>${product.categoria || 'N/A'}</div>
-                        <div><strong>Unidad de Venta:</strong><br>${product.unidad || 'UND'}</div>
-                    </div>
-                    
-                    <div style="margin-bottom: 15px; font-size: 14px;">
-                        <strong>Disponibilidad:</strong> ${stockText}
-                    </div>
+    // --- HELPERS ---
+    function normalizarTexto(texto) {
+        return (!texto ? '' : texto.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase());
+    }
+    function busquedaAvanzada(query, textoProducto) {
+        const qNorm = normalizarTexto(query), tNorm = normalizarTexto(textoProducto);
+        if (tNorm.includes(qNorm)) return true;
+        const palabras = qNorm.split(' ').filter(p => p.trim() !== '');
+        return palabras.every(pq => tNorm.includes(pq));
+    }
+    function getIconForProduct(desc, cat) {
+        const d = (desc || '').toLowerCase(), c = (cat || '').toLowerCase();
+        if (c.includes('alarma')) return 'fa-bell';
+        if (c.includes('bateria')) return 'fa-car-battery';
+        if (c.includes('computacion') || c.includes('redes')) return 'fa-network-wired';
+        if (c.includes('herramientas')) return 'fa-screwdriver-wrench';
+        if (c.includes('porton')) return 'fa-door-open';
+        if (c.includes('incendio')) return 'fa-fire';
+        if (c.includes('tornilleria')) return 'fa-gear';
+        if (c.includes('tv') || c.includes('cable')) return 'fa-tv';
+        if (c.includes('electricidad') || c.includes('cerco')) return 'fa-bolt';
+        if (c.includes('video') || c.includes('camara')) return 'fa-video';
+        if (c.includes('rack')) return 'fa-server';
+        if (c.includes('fibra')) return 'fa-wifi';
+        if (d.includes('cable') || d.includes('bobina')) return 'fa-wave-square';
+        if (d.includes('cerradura') || d.includes('electroiman')) return 'fa-lock';
+        if (d.includes('conector') || d.includes('jack')) return 'fa-plug';
+        return 'fa-box';
+    }
 
-                    <div style="background: var(--gris-fondo); padding: 12px; border-radius: 6px; border: 1px solid var(--gris-borde); margin-bottom: 15px;">
-                        <strong style="font-size: 13px; color: var(--azul-oscuro);">Especificaciones / Notas:</strong>
-                        <p style="margin-top: 5px; font-size: 13px; white-space: pre-wrap;">${especificaciones}</p>
-                    </div>
+    // ============================================================
+    //  🔥 CLICK EN LA TARJETA = VISITA + ABRIR MODAL
+    // ============================================================
+    document.getElementById('catalogWrapper').addEventListener('click', function (e) {
+        if (e.target.closest('.btn-cotizar')) return;
 
-                    <div class="modal-price">${precioTexto}</div>
-                    
-                    <div class="actions-group">
-                        <a href="https://wa.me/584142946200?text=${encodeURIComponent(`Hola Supplyparts, deseo cotizar el producto:\n\n📌 Desc: ${product.descripcion}\n🔢 Cód: ${product.codigo}\n💰 Precio ref: ${precioTexto}`)}" target="_blank" class="btn-cotizar" style="flex: 1; font-size: 15px; padding: 12px;" onclick="trackClick('${product.codigo}')">
-                            <i class="fa-brands fa-whatsapp" style="font-size: 18px;"></i> Solicitar Pedido
-                        </a>
-                        <button class="btn-compartir" onclick="shareProduct('${product.codigo}', '${product.descripcion.replace(/'/g, "\\'")}')" title="Compartir este producto">
-                            <i class="fa-solid fa-share-nodes"></i>
-                        </button>
-                    </div>
+        const card = e.target.closest('.product-card');
+        if (!card) return;
+
+        const codigo = card.dataset.codigo;
+        if (!codigo) return;
+
+        registrarClick(codigo);
+        openModal(codigo);
+    });
+
+    // --- COMPARTIR ---
+    function shareProduct(codigo, descripcion) {
+        const shareUrl = window.location.origin + window.location.pathname + '?p=' + codigo;
+        const shareData = {
+            title: 'Supplyparts - Ficha Técnica',
+            text: `Mira este producto en Supplyparts:\n${descripcion}\n`,
+            url: shareUrl
+        };
+        if (navigator.share) navigator.share(shareData).catch(() => {});
+        else navigator.clipboard.writeText(shareUrl).then(() => {
+            alert('¡Enlace copiado al portapapeles! Ya puedes pegarlo y enviarlo.');
+        });
+    }
+
+    // --- MODAL ---
+    function openModal(codigoStr) {
+        const product = productsArray.find(p => String(p.codigo) === String(codigoStr));
+        if (!product) return;
+
+        const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?p=' + product.codigo;
+        window.history.pushState({path: newUrl}, '', newUrl);
+
+        const modal = document.getElementById('productModal');
+        const bodyContent = document.getElementById('modalBodyContent');
+
+        const stockVal = Number(product.stock) || 0;
+        const stockText = stockVal > 0
+            ? `<span style="color: #28a745; font-weight: bold; background: #e6f4ea; padding: 3px 8px; border-radius: 4px;">${stockVal} en almacén</span>`
+            : `<span style="color: #e53e3e; font-weight: bold; background: #fce8e8; padding: 3px 8px; border-radius: 4px;">Agotado</span>`;
+
+        const precioRaw = String(product.precio2 || '0');
+        const precioLimpio = precioRaw.replace(',', '.').replace(/[^0-9.-]/g, '');
+        const precio = Number(precioLimpio) || 0;
+        const precioTexto = precio > 0 ? `$ BCV ${precio.toFixed(2)}` : 'Consultar Precio';
+
+        const iconClass = getIconForProduct(product.descripcion, product.categoria);
+        const imgHTML = (product.url_foto && product.url_foto.trim() !== "")
+            ? `<img src="${product.url_foto}" alt="${product.descripcion}">`
+            : `<i class="fa-solid ${iconClass}" style="font-size: 70px; color: #cbd5e0;"></i>`;
+
+        const especificaciones = product.especificaciones || product.ESPECIFICACIONES || 'No se han registrado detalles técnicos adicionales para este producto.';
+
+        bodyContent.innerHTML = `
+            <div class="modal-img-container">${imgHTML}</div>
+            <div class="modal-details">
+                <div style="font-size: 18px; font-weight: 800; margin-bottom: 15px; color: var(--gris-oscuro); line-height: 1.3;">
+                    ${product.descripcion}
                 </div>
-            `;
-            
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden'; 
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; font-size: 13px;">
+                    <div><strong>Código:</strong><br>${product.codigo || 'N/A'}</div>
+                    <div><strong>Modelo:</strong><br>${product.modelo || 'N/A'}</div>
+                    <div><strong>Categoría:</strong><br>${product.categoria || 'N/A'}</div>
+                    <div><strong>Unidad de Venta:</strong><br>${product.unidad || 'UND'}</div>
+                </div>
+                <div style="margin-bottom: 15px; font-size: 14px;"><strong>Disponibilidad:</strong> ${stockText}</div>
+                <div style="background: var(--gris-fondo); padding: 12px; border-radius: 6px; border: 1px solid var(--gris-borde); margin-bottom: 15px;">
+                    <strong style="font-size: 13px; color: var(--azul-oscuro);">Especificaciones / Notas:</strong>
+                    <p style="margin-top: 5px; font-size: 13px; white-space: pre-wrap;">${especificaciones}</p>
+                </div>
+                <div class="modal-price">${precioTexto}</div>
+                <div class="actions-group">
+                    <a href="https://wa.me/584142946200?text=${encodeURIComponent(`Hola Supplyparts, deseo cotizar el producto:\n\n📌 Desc: ${product.descripcion}\n🔢 Cód: ${product.codigo}\n💰 Precio ref: ${precioTexto}`)}"
+                       target="_blank" class="btn-cotizar" style="flex: 1; font-size: 15px; padding: 12px;">
+                        <i class="fa-brands fa-whatsapp" style="font-size: 18px;"></i> Solicitar Pedido
+                    </a>
+                    <button class="btn-compartir" onclick="shareProduct('${product.codigo}', '${product.descripcion.replace(/'/g, "\\'")}')" title="Compartir este producto">
+                        <i class="fa-solid fa-share-nodes"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(e) {
+        if (e && e.target.classList.contains('modal-overlay') === false) return;
+        document.getElementById('productModal').classList.remove('active');
+        document.body.style.overflow = 'auto';
+
+        const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+        window.history.pushState({path: cleanUrl}, '', cleanUrl);
+
+        if (currentCategory === 'MAS_VISITADOS') {
+            setTimeout(() => filterProducts(), 80);
         }
+    }
 
-        function closeModal(e) {
-            if (e && e.target.classList.contains('modal-overlay') === false) return;
-            document.getElementById('productModal').classList.remove('active');
-            document.body.style.overflow = 'auto'; 
-            
-            const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
-            window.history.pushState({path: cleanUrl}, '', cleanUrl);
-        }
+    // --- RENDER MENÚ ---
+    function renderMenu() {
+        const nav = document.getElementById('dynamicNav');
+        nav.innerHTML = '';
 
-        // --- RENDERIZADO DE PRODUCTOS Y MENÚ ---
-        function renderMenu() {
-            const nav = document.getElementById('dynamicNav');
-            nav.innerHTML = ''; 
-            
-            const liMasVisitados = document.createElement('li');
-            liMasVisitados.className = `nav-item ${currentCategory === 'MAS_VISITADOS' ? 'active' : ''}`;
-            liMasVisitados.innerHTML = `<a href="#" onclick="changeCategory(event, 'MAS_VISITADOS')"><i class="fa-solid fa-fire"></i> MÁS VISITADOS</a>`;
-            nav.appendChild(liMasVisitados);
-            
-            let categorias = [...new Set(productsArray.map(p => (p.categoria || '').toUpperCase().trim()))].filter(c => c !== '').sort();
-            categorias.forEach(cat => {
-                const li = document.createElement('li');
-                li.className = `nav-item ${currentCategory === cat ? 'active' : ''}`;
-                li.innerHTML = `<a href="#" onclick="changeCategory(event, '${cat}')">${cat}</a>`;
-                nav.appendChild(li);
-            });
+        const liMas = document.createElement('li');
+        liMas.className = `nav-item ${currentCategory === 'MAS_VISITADOS' ? 'active' : ''}`;
+        liMas.innerHTML = `<a href="#" onclick="changeCategory(event, 'MAS_VISITADOS')"><i class="fa-solid fa-fire"></i> MÁS VISITADOS</a>`;
+        nav.appendChild(liMas);
 
-            setTimeout(startNavCarousel, 500);
-        }
-
-        function renderProducts(products, isSearchActive = false) {
-            const wrapper = document.getElementById('catalogWrapper');
-            wrapper.innerHTML = '';
-            document.getElementById('resultsCount').innerText = `${products.length} Resultados`;
-
-            if(products.length === 0) {
-                wrapper.innerHTML = `<p style="text-align:center; color: var(--gris-texto); padding: 40px; font-weight:bold;">Aún no hay productos en esta sección.</p>`;
-                return;
-            }
-
-            if (currentCategory === 'MAS_VISITADOS' && !isSearchActive) {
-                const grid = document.createElement('div'); grid.className = 'products-grid';
-                buildCards(products, grid, isSearchActive);
-                wrapper.appendChild(grid);
-                return;
-            }
-
-            const groupedProducts = {};
-            products.forEach(p => {
-                const catKey = (p.categoria || 'OTROS').toUpperCase().trim();
-                if (!groupedProducts[catKey]) groupedProducts[catKey] = [];
-                groupedProducts[catKey].push(p);
-            });
-
-            for (const cat in groupedProducts) {
-                if (Object.keys(groupedProducts).length > 1 || isSearchActive) {
-                    const catHeader = document.createElement('h2'); catHeader.className = 'category-divider'; catHeader.innerText = cat;
-                    wrapper.appendChild(catHeader);
-                }
-                const grid = document.createElement('div'); grid.className = 'products-grid';
-                buildCards(groupedProducts[cat], grid, isSearchActive);
-                wrapper.appendChild(grid);
-            }
-        }
-
-        function buildCards(items, gridElement, isSearchActive) {
-            items.forEach(p => {
-                const card = document.createElement('div');
-                card.className = 'product-card';
-                
-                const stockVal = Number(p.stock) || 0;
-                let stockBadge = stockVal > 0 
-                    ? `<span class="stock-badge" style="background-color: #28a745;">Stock: ${stockVal}</span>` 
-                    : `<span class="stock-badge" style="background-color: #e53e3e;">Agotado</span>`;
-                
-                const precioRaw = String(p.precio2 || '0');
-                const precioLimpio = precioRaw.replace(',', '.').replace(/[^0-9.-]/g, '');
-                const precio = Number(precioLimpio) || 0;
-                const precioTexto = precio > 0 ? `$ BCV ${precio.toFixed(2)}` : 'Consultar';
-                
-                const iconClass = getIconForProduct(p.descripcion, p.categoria);
-                const imgHTML = (p.url_foto && p.url_foto.trim() !== "") 
-                    ? `<img src="${p.url_foto}" alt="${p.descripcion}" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\\'fa-solid ${iconClass}\\' style=\\'font-size: 30px;\\'></i><span style=\\'font-size:10px;\\'>Sin imagen</span>';">` 
-                    : `<i class="fa-solid ${iconClass}" style="font-size: 30px;"></i><span style="font-size:10px;">En proceso</span>`;
-
-                let outOfCategoryWarning = '';
-                const pCat = (p.categoria || '').toUpperCase().trim();
-                if (isSearchActive && currentCategory !== 'MAS_VISITADOS' && pCat !== currentCategory) {
-                    outOfCategoryWarning = `<div class="out-of-category-badge"><i class="fa-solid fa-circle-exclamation"></i> En: ${p.categoria}</div>`;
-                }
-
-                card.innerHTML = `
-                    ${stockBadge}
-                    <div class="image-placeholder" onclick="openModal('${p.codigo}')" title="Ver detalles del producto">
-                        ${imgHTML}
-                    </div>
-                    <div class="product-info">
-                        ${outOfCategoryWarning}
-                        <div class="product-code">Cód: ${p.codigo || 'N/A'}</div>
-                        <div class="product-name" onclick="openModal('${p.codigo}')" title="${p.descripcion}">
-                            ${p.descripcion || 'Sin descripción'}
-                        </div>
-                        <div class="product-meta">
-                            ${p.modelo ? `<span>Mod: ${p.modelo}</span><br>` : ''}
-                            <span>Unidad: ${p.unidad || 'UND'}</span>
-                        </div>
-                        <div class="product-price">${precioTexto}</div>
-                        <a href="https://wa.me/584142946200?text=${encodeURIComponent(`Hola Supplyparts, deseo cotizar:\n\n📌 Desc: ${p.descripcion}\n🔢 Cód: ${p.codigo}\n💰 Precio: ${precioTexto}`)}" target="_blank" class="btn-cotizar" onclick="trackClick('${p.codigo}')">
-                            <i class="fa-brands fa-whatsapp"></i> Cotizar
-                        </a>
-                    </div>
-                `;
-                gridElement.appendChild(card);
-            });
-        }
-
-        function filterProducts() {
-            const query = document.getElementById('searchInput').value;
-            let filtered = productsArray;
-
-            if (query.trim() !== '') {
-                filtered = filtered.filter(p => busquedaAvanzada(query, [p.descripcion, p.codigo, p.modelo, p.categoria].filter(Boolean).join(" ")));
-            } else if (currentCategory !== 'MAS_VISITADOS') {
-                filtered = filtered.filter(p => p.categoria && p.categoria.toUpperCase().trim() === currentCategory.toUpperCase().trim());
-            }
-
-            filtered.sort((a, b) => {
-                const stockA = Number(a.stock) || 0; const stockB = Number(b.stock) || 0;
-                const clicksA = Number(a.clicks) || 0; const clicksB = Number(b.clicks) || 0;
-                if (stockA > 0 && stockB === 0) return -1;
-                if (stockA === 0 && stockB > 0) return 1;
-                if (clicksB !== clicksA) return clicksB - clicksA;
-                return (a.descripcion || '').toLowerCase().localeCompare((b.descripcion || '').toLowerCase());
-            });
-
-            if (currentCategory === 'MAS_VISITADOS' && query.trim() === '') {
-                filtered = filtered.slice(0, 20);
-            }
-            
-            renderProducts(filtered, query.trim() !== '');
-        }
-
-        function changeCategory(event, cat) {
-            event.preventDefault();
-            currentCategory = cat;
-            
-            categoriasExploradas.add(cat === 'MAS_VISITADOS' ? 'MÁS VISITADOS' : cat);
-            
-            if (cat === 'MAS_VISITADOS') {
-                document.getElementById('catalogTitle').innerText = '🔥 Productos Más Visitados';
-            } else {
-                document.getElementById('catalogTitle').innerText = cat;
-            }
-            
-            document.getElementById('searchInput').value = '';
-            renderMenu(); 
-            filterProducts(); 
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        async function initCatalog() {
-            const wrapper = document.getElementById('catalogWrapper');
-            wrapper.innerHTML = '<p style="text-align:center; padding: 40px;"><i class="fa-solid fa-spinner fa-spin"></i> Sincronizando inventario...</p>';
-            try {
-                const response = await fetch(GOOGLE_SHEET_API_URL, { method: 'GET', cache: 'no-store' });
-                const data = await response.json();
-                
-                // Se agregó una condición extra para asegurar que ninguna categoría que contenga "SERVICIO" se muestre.
-                productsArray = data.filter(p => 
-                    !EXCLUIR_CATEGORIAS.includes((p.categoria || '').toUpperCase().trim()) && 
-                    !(p.categoria || '').toUpperCase().includes('SERVICIO') &&
-                    !(p.descripcion || '').toUpperCase().trim().includes('SIN DESCRIPCION')
-                );
-                
-                renderMenu(); 
-                filterProducts(); 
-                trackVisit();
-
-                const urlParams = new URLSearchParams(window.location.search);
-                const productId = urlParams.get('p');
-                if (productId) {
-                    setTimeout(() => { openModal(productId); }, 400);
-                }
-
-            } catch (error) {
-                wrapper.innerHTML = `<p style="text-align:center; color: #e53e3e; padding: 40px;"><i class="fa-solid fa-triangle-exclamation"></i> Error al cargar catálogo.</p>`;
-            }
-        }
-
-        document.getElementById('logoBtn').addEventListener('click', (e) => {
-            e.preventDefault(); 
-            currentCategory = 'MAS_VISITADOS'; 
-            document.getElementById('searchInput').value = '';
-            document.getElementById('catalogTitle').innerText = '🔥 Productos Más Visitados';
-            renderMenu(); 
-            filterProducts(); 
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+        let categorias = [...new Set(productsArray.map(p => (p.categoria || '').toUpperCase().trim()))].filter(c => c !== '').sort();
+        categorias.forEach(cat => {
+            const li = document.createElement('li');
+            li.className = `nav-item ${currentCategory === cat ? 'active' : ''}`;
+            li.innerHTML = `<a href="#" onclick="changeCategory(event, '${cat}')">${cat}</a>`;
+            nav.appendChild(li);
         });
 
-        window.onload = initCatalog;
-    </script>
+        setTimeout(startNavCarousel, 500);
+    }
+
+    // --- RENDER PRODUCTOS ---
+    function renderProducts(products, isSearchActive = false) {
+        const wrapper = document.getElementById('catalogWrapper');
+        wrapper.innerHTML = '';
+        document.getElementById('resultsCount').innerText = `${products.length} Resultados`;
+
+        if (products.length === 0) {
+            wrapper.innerHTML = `<p style="text-align:center; color: var(--gris-texto); padding: 40px; font-weight:bold;">Aún no hay productos en esta sección.</p>`;
+            return;
+        }
+
+        if (currentCategory === 'MAS_VISITADOS' && !isSearchActive) {
+            const grid = document.createElement('div'); grid.className = 'products-grid';
+            buildCards(products, grid, isSearchActive);
+            wrapper.appendChild(grid);
+            return;
+        }
+
+        const grouped = {};
+        products.forEach(p => {
+            const catKey = (p.categoria || 'OTROS').toUpperCase().trim();
+            if (!grouped[catKey]) grouped[catKey] = [];
+            grouped[catKey].push(p);
+        });
+
+        for (const cat in grouped) {
+            if (Object.keys(grouped).length > 1 || isSearchActive) {
+                const h = document.createElement('h2');
+                h.className = 'category-divider';
+                h.innerText = cat;
+                wrapper.appendChild(h);
+            }
+            const grid = document.createElement('div'); grid.className = 'products-grid';
+            buildCards(grouped[cat], grid, isSearchActive);
+            wrapper.appendChild(grid);
+        }
+    }
+
+    function buildCards(items, gridElement, isSearchActive) {
+        items.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            card.dataset.codigo = p.codigo;
+
+            const stockVal = Number(p.stock) || 0;
+            const stockBadge = stockVal > 0
+                ? `<span class="stock-badge" style="background-color: #28a745;">Stock: ${stockVal}</span>`
+                : `<span class="stock-badge" style="background-color: #e53e3e;">Agotado</span>`;
+
+            const precioRaw = String(p.precio2 || '0');
+            const precioLimpio = precioRaw.replace(',', '.').replace(/[^0-9.-]/g, '');
+            const precio = Number(precioLimpio) || 0;
+            const precioTexto = precio > 0 ? `$ BCV ${precio.toFixed(2)}` : 'Consultar';
+
+            const iconClass = getIconForProduct(p.descripcion, p.categoria);
+            const imgHTML = (p.url_foto && p.url_foto.trim() !== "")
+                ? `<img src="${p.url_foto}" alt="${p.descripcion}" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\\'fa-solid ${iconClass}\\' style=\\'font-size: 30px;\\'></i><span style=\\'font-size:10px;\\'>Sin imagen</span>';">`
+                : `<i class="fa-solid ${iconClass}" style="font-size: 30px;"></i><span style="font-size:10px;">En proceso</span>`;
+
+            let outOfCategoryWarning = '';
+            const pCat = (p.categoria || '').toUpperCase().trim();
+            if (isSearchActive && currentCategory !== 'MAS_VISITADOS' && pCat !== currentCategory) {
+                outOfCategoryWarning = `<div class="out-of-category-badge"><i class="fa-solid fa-circle-exclamation"></i> En: ${p.categoria}</div>`;
+            }
+
+            card.innerHTML = `
+                ${stockBadge}
+                <div class="image-placeholder" title="Ver detalles del producto">${imgHTML}</div>
+                <div class="product-info">
+                    ${outOfCategoryWarning}
+                    <div class="product-code">Cód: ${p.codigo || 'N/A'}</div>
+                    <div class="product-name" title="${p.descripcion}">${p.descripcion || 'Sin descripción'}</div>
+                    <div class="product-meta">
+                        ${p.modelo ? `<span>Mod: ${p.modelo}</span><br>` : ''}
+                        <span>Unidad: ${p.unidad || 'UND'}</span>
+                    </div>
+                    <div class="product-price">${precioTexto}</div>
+                    <a href="https://wa.me/584142946200?text=${encodeURIComponent(`Hola Supplyparts, deseo cotizar:\n\n📌 Desc: ${p.descripcion}\n🔢 Cód: ${p.codigo}\n💰 Precio: ${precioTexto}`)}"
+                       target="_blank" class="btn-cotizar" onclick="event.stopPropagation(); registrarClick('${p.codigo}');">
+                        <i class="fa-brands fa-whatsapp"></i> Cotizar
+                    </a>
+                </div>
+            `;
+            gridElement.appendChild(card);
+        });
+    }
+
+    // --- FILTRO / ORDEN ---
+    function filterProducts() {
+        const query = document.getElementById('searchInput').value;
+        let filtered = productsArray;
+
+        if (query.trim() !== '') {
+            filtered = filtered.filter(p => busquedaAvanzada(query, [p.descripcion, p.codigo, p.modelo, p.categoria].filter(Boolean).join(" ")));
+        } else if (currentCategory !== 'MAS_VISITADOS') {
+            filtered = filtered.filter(p => p.categoria && p.categoria.toUpperCase().trim() === currentCategory.toUpperCase().trim());
+        }
+
+        // 🔥 Orden: 1) Con stock primero  2) Más clics primero  3) Alfabético
+        filtered.sort((a, b) => {
+            const sA = Number(a.stock) || 0, sB = Number(b.stock) || 0;
+            if (sA > 0 && sB === 0) return -1;
+            if (sA === 0 && sB > 0) return 1;
+
+            const cA = getClicks(a), cB = getClicks(b);
+            if (cB !== cA) return cB - cA;
+
+            return (a.descripcion || '').toLowerCase().localeCompare((b.descripcion || '').toLowerCase());
+        });
+
+        if (currentCategory === 'MAS_VISITADOS' && query.trim() === '') {
+            filtered = filtered.slice(0, 20);
+        }
+
+        renderProducts(filtered, query.trim() !== '');
+    }
+
+    function changeCategory(event, cat) {
+        event.preventDefault();
+        currentCategory = cat;
+        categoriasExploradas.add(cat === 'MAS_VISITADOS' ? 'MÁS VISITADOS' : cat);
+
+        document.getElementById('catalogTitle').innerText =
+            cat === 'MAS_VISITADOS' ? '🔥 Productos Más Visitados' : cat;
+
+        document.getElementById('searchInput').value = '';
+        renderMenu();
+        filterProducts();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function initCatalog() {
+        const wrapper = document.getElementById('catalogWrapper');
+        wrapper.innerHTML = '<p style="text-align:center; padding: 40px;"><i class="fa-solid fa-spinner fa-spin"></i> Sincronizando inventario...</p>';
+        try {
+            const response = await fetch(GOOGLE_SHEET_API_URL, { method: 'GET', cache: 'no-store' });
+            const data = await response.json();
+
+            productsArray = data
+                .filter(p =>
+                    !EXCLUIR_CATEGORIAS.includes((p.categoria || '').toUpperCase().trim()) &&
+                    !(p.categoria || '').toUpperCase().includes('SERVICIO') &&
+                    !(p.descripcion || '').toUpperCase().trim().includes('SIN DESCRIPCION')
+                )
+                .map(p => ({ ...p, _serverClicks: Number(p.clicks ?? p.CLICKS ?? p.clics ?? 0) || 0 }));
+
+            renderMenu();
+            filterProducts();
+            trackVisit();
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('p');
+            if (productId) {
+                setTimeout(() => { openModal(productId); }, 400);
+            }
+        } catch (error) {
+            wrapper.innerHTML = `<p style="text-align:center; color: #e53e3e; padding: 40px;"><i class="fa-solid fa-triangle-exclamation"></i> Error al cargar catálogo.</p>`;
+        }
+    }
+
+    document.getElementById('logoBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        currentCategory = 'MAS_VISITADOS';
+        document.getElementById('searchInput').value = '';
+        document.getElementById('catalogTitle').innerText = '🔥 Productos Más Visitados';
+        renderMenu();
+        filterProducts();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    window.onload = initCatalog;
+
+    // 🔧 Utilidad de diagnóstico (consola del navegador)
+    window.SupplyParts = {
+        ranking: () => productsArray
+            .map(p => ({ cod: p.codigo, desc: (p.descripcion || '').slice(0, 40), clics: getClicks(p) }))
+            .sort((a, b) => b.clics - a.clics)
+            .slice(0, 20),
+        resetLocal: () => { localStorage.removeItem(CLICKS_KEY); location.reload(); }
+    };
+</script>
 </body>
 </html>
