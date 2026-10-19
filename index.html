@@ -395,7 +395,7 @@
             ? `<span style="color: #28a745; font-weight: bold; background: #e6f4ea; padding: 3px 8px; border-radius: 4px;">${stockVal} en almacén</span>`
             : `<span style="color: #e53e3e; font-weight: bold; background: #fce8e8; padding: 3px 8px; border-radius: 4px;">Agotado</span>`;
 
-        const precioRaw = String(product.precio2 || '0');
+        const precioRaw = String(product.precio1 || '0');
         const precioLimpio = precioRaw.replace(',', '.').replace(/[^0-9.-]/g, '');
         const precio = Number(precioLimpio) || 0;
         const precioTexto = precio > 0 ? `$ BCV ${precio.toFixed(2)}` : 'Consultar Precio';
@@ -524,7 +524,7 @@
                 ? `<span class="stock-badge" style="background-color: #28a745;">Stock: ${stockVal}</span>`
                 : `<span class="stock-badge" style="background-color: #e53e3e;">Agotado</span>`;
 
-            const precioRaw = String(p.precio2 || '0');
+            const precioRaw = String(p.precio1 || '0');
             const precioLimpio = precioRaw.replace(',', '.').replace(/[^0-9.-]/g, '');
             const precio = Number(precioLimpio) || 0;
             const precioTexto = precio > 0 ? `$ BCV ${precio.toFixed(2)}` : 'Consultar';
