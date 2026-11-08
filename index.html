@@ -22,8 +22,11 @@
 
         .sticky-header-wrapper { position: -webkit-sticky; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .top-header { background-color: var(--azul-supply); padding: 12px 5%; display: flex; align-items: center; justify-content: space-between; gap: 15px; flex-wrap: wrap; }
-        .logo { font-size: 24px; font-weight: 700; color: var(--blanco); text-decoration: none; white-space: nowrap; }
+        
+        .logo-wrapper { display: flex; flex-direction: column; text-decoration: none; }
+        .logo { font-size: 24px; font-weight: 700; color: var(--blanco); white-space: nowrap; line-height: 1.1; }
         .logo span { color: var(--amarillo-supply); }
+        .logo-subtext { font-size: 11px; color: var(--blanco); font-weight: 400; margin-top: 4px; opacity: 0.9; letter-spacing: 0.5px; }
 
         .search-container { flex: 1; min-width: 250px; display: flex; background-color: var(--blanco); border-radius: 6px; overflow: hidden; border: 2px solid transparent; transition: border-color 0.2s; }
         .search-container:focus-within { border-color: var(--amarillo-supply); }
@@ -145,6 +148,7 @@
 
         @media (max-width: 768px) {
             .top-header { padding: 12px; justify-content: center; }
+            .logo-wrapper { align-items: center; text-align: center; }
             .search-container { width: 100%; order: 3; margin-top: 10px; }
             .hero-card { padding: 20px 15px; }
             .hero-card h1 { font-size: 20px; }
@@ -158,7 +162,10 @@
 
     <div class="sticky-header-wrapper">
         <header class="top-header">
-            <a href="#" class="logo" id="logoBtn">Supply<span>parts</span></a>
+            <a href="#" class="logo-wrapper" id="logoBtn">
+                <div class="logo">Supply<span>parts</span></div>
+                <div class="logo-subtext">Venezuela C.A. RIF: J-40865897-6</div>
+            </a>
             <div class="header-right">
                 <a onclick="initCatalog()" class="cart-box" title="Actualizar Inventario">
                     <i class="fa-solid fa-rotate"></i> Actualizar
@@ -397,8 +404,9 @@
 
         const precioRaw = String(product.precio1 || '0');
         const precioLimpio = precioRaw.replace(',', '.').replace(/[^0-9.-]/g, '');
-        const precio = Number(precioLimpio) || 0;
-        const precioTexto = precio > 0 ? `$ BCV ${precio.toFixed(2)}` : 'Consultar Precio';
+        const precioBase = Number(precioLimpio) || 0;
+        const precioConIva = precioBase * 1.16; // Cálculo del 16% IVA
+        const precioTexto = precioConIva > 0 ? `$ BCV ${precioConIva.toFixed(2)}` : 'Consultar Precio';
 
         const iconClass = getIconForProduct(product.descripcion, product.categoria);
         const imgHTML = (product.url_foto && product.url_foto.trim() !== "")
@@ -526,8 +534,9 @@
 
             const precioRaw = String(p.precio1 || '0');
             const precioLimpio = precioRaw.replace(',', '.').replace(/[^0-9.-]/g, '');
-            const precio = Number(precioLimpio) || 0;
-            const precioTexto = precio > 0 ? `$ BCV ${precio.toFixed(2)}` : 'Consultar';
+            const precioBase = Number(precioLimpio) || 0;
+            const precioConIva = precioBase * 1.16; // Cálculo del 16% IVA
+            const precioTexto = precioConIva > 0 ? `$ BCV ${precioConIva.toFixed(2)}` : 'Consultar';
 
             const iconClass = getIconForProduct(p.descripcion, p.categoria);
             const imgHTML = (p.url_foto && p.url_foto.trim() !== "")
